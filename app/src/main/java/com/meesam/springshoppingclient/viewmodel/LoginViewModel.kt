@@ -1,9 +1,12 @@
 package com.meesam.springshoppingclient.viewmodel
 
 import android.util.Patterns
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -15,13 +18,18 @@ import com.meesam.springshoppingclient.utils.Constants
 import com.meesam.springshoppingclient.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 
-
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val userAuthRepository: UserAuthRepository,
@@ -31,10 +39,8 @@ class LoginViewModel @Inject constructor(
     private val _loginUiState = MutableStateFlow<AppState<String>>(AppState.Idle)
     val loginUiState: StateFlow<AppState<String>> = _loginUiState.asStateFlow()
 
-    var email: String by mutableStateOf("")
-        private set
-    var password: String by mutableStateOf("")
-        private set
+    val email = TextFieldState()
+    val password = TextFieldState()
 
     var emailError by mutableStateOf<String?>(null)
         private set
@@ -42,75 +48,92 @@ class LoginViewModel @Inject constructor(
     var passwordError by mutableStateOf<String?>(null)
         private set
 
+
+    init {
+        // Observe changes to the email field's text
+        snapshotFlow { email.text }
+            .drop(1)
+            .debounce(300)
+            .onEach {
+                isEmailValid()
+            }.launchIn(viewModelScope)
+
+        snapshotFlow { password.text }
+            .drop(1)
+            .debounce(300)
+            .onEach {
+                isPasswordValid()
+            }.launchIn(viewModelScope)
+
+    }
+
+
     fun onEvent(event: UserLoginEvents) {
         when (event) {
-            is UserLoginEvents.onEmailChange -> {
-                email = event.email
-                //isEmailValid(showError = true)
-            }
-
-            is UserLoginEvents.onPasswordChange -> {
-                password = event.password
-                //isPasswordValid(showError = true)
-            }
-
-            is UserLoginEvents.onLoginClick -> {
+            is UserLoginEvents.OnLoginClick -> {
                 signInUser()
             }
 
-            is UserLoginEvents.reset -> {
+            is UserLoginEvents.Reset -> {
                 reset()
             }
         }
     }
 
-    private fun isEmailValid(showError: Boolean = false): Boolean {
-        if (email.isBlank()) {
-            if (showError) emailError = "Email cannot be empty"
+    private fun isEmailValid(): Boolean {
+        if (email.text.isBlank()) {
+            emailError = "Email cannot be empty"
             return false
         }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            if (showError) emailError = "Invalid email address"
+        if (!Patterns.EMAIL_ADDRESS.matcher(email.text.toString()).matches()) {
+            emailError = "Invalid email address"
             return false
         }
         emailError = null
         return true
     }
 
-    private fun isPasswordValid(showError: Boolean = false): Boolean {
-        if (password.isBlank()) {
-            if (showError) passwordError = "Password cannot be empty"
+    private fun isPasswordValid(): Boolean {
+        if (password.text.isBlank()) {
+            passwordError = "Password cannot be empty"
             return false
         }
         passwordError = null
         return true
     }
 
-    private fun isFormValid(): Boolean {
-        val emailValid = isEmailValid(showError = true)
-        val passwordValid = isPasswordValid(showError = true)
+    val isFormValid by derivedStateOf {
+        email.text.isNotBlank() &&
+                password.text.isNotBlank() &&
+                emailError == null &&
+                passwordError == null
+    }
+
+    private fun isLoginFormValid(): Boolean {
+        val emailValid = isEmailValid()
+        val passwordValid = isPasswordValid()
         return emailValid && passwordValid
     }
 
     private fun signInUser() {
-        if (!isFormValid()) {
+        if (!isLoginFormValid()) {
             return
         }
         viewModelScope.launch {
             _loginUiState.value = AppState.Loading
             val request = AuthLoginRequest(
-                email = email,
-                password = password
+                email = email.text.toString(),
+                password = password.text.toString()
             )
             val result = userAuthRepository.login(request)
 
             if (result.isSuccessful) {
                 result.body()?.let {
-                    tokenManager.saveToken(it.token, Constants.ACCESS_TOKEN)
+                    tokenManager.saveToken(it.accessToken, Constants.ACCESS_TOKEN)
                     tokenManager.saveToken(it.refreshToken, Constants.REFRESH_TOKEN)
                     val userString = Gson().toJson(it.user)
                     tokenManager.saveUserDetail(userString)
-                    _loginUiState.value = AppState.Success(it.token)
+                    _loginUiState.value = AppState.Success("Success")
                 }
             } else {
                 _loginUiState.value = AppState.Error(result.toString())
@@ -119,8 +142,6 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun reset() {
-        email = ""
-        password = ""
         emailError = null
         passwordError = null
         _loginUiState.value = AppState.Idle

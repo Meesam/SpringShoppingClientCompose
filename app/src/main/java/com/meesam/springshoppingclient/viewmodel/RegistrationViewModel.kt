@@ -1,10 +1,12 @@
 package com.meesam.springshoppingclient.viewmodel
 
 import android.util.Patterns
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meesam.springshoppingclient.events.UserRegistrationEvents
@@ -13,13 +15,19 @@ import com.meesam.springshoppingclient.repository.auth.UserAuthRepository
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class RegistrationViewModel @Inject constructor(private val userAuthRepository: UserAuthRepository, private val tokenManager: TokenManager) :
     ViewModel() {
@@ -27,17 +35,11 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
     private var _registrationState = MutableStateFlow<AppState<String>>(AppState.Idle)
     val registrationState: StateFlow<AppState<String>> = _registrationState.asStateFlow()
 
-    var name by mutableStateOf("")
-        private set
+    val name = TextFieldState()
+    val email = TextFieldState()
+    var password = TextFieldState()
 
-    var email by mutableStateOf("")
-        private set
-
-    var password by mutableStateOf("")
-        private set
-
-    var confirmPassword by mutableStateOf("")
-        private set
+    var confirmPassword = TextFieldState()
 
     var nameError by mutableStateOf<String?>(null)
         private set
@@ -48,11 +50,43 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
 
     var confirmPasswordError by mutableStateOf<String?>(null)
 
+    init {
+        // Observe changes to the name field's text
+        snapshotFlow { name.text }
+            .drop(1)
+            .debounce(300)
+            .onEach {
+                isNameValid()
+            }.launchIn(viewModelScope)
+
+        // Observe changes to the email field's text
+        snapshotFlow { email.text }
+            .drop(1)
+            .debounce(300) // This prevents validating on every single keystroke
+            .onEach {
+                isValidEmail()
+            }.launchIn(viewModelScope)
+
+        snapshotFlow { password.text }
+            .drop(1)
+            .debounce(300)
+            .onEach {
+                isPasswordValid()
+            }.launchIn(viewModelScope)
+
+        snapshotFlow { confirmPassword.text }
+            .drop(1)
+            .debounce(300)
+            .onEach {
+                isConfirmPasswordValid()
+            }.launchIn(viewModelScope)
+    }
+
     val isFormValid by derivedStateOf {
-        name.isNotBlank() &&
-                email.isNotBlank() &&
-                password.isNotBlank() &&
-                confirmPassword.isNotBlank() &&
+        name.text.isNotBlank() &&
+                email.text.isNotBlank() &&
+                password.text.isNotBlank() &&
+                confirmPassword.text.isNotBlank() &&
 
                 nameError == null &&
                 emailError == null &&
@@ -60,28 +94,9 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
                 confirmPasswordError == null
     }
 
+
     fun onEvent(event: UserRegistrationEvents) {
         when (event) {
-            is UserRegistrationEvents.OnNameChange -> {
-                name = event.name
-                isNameValid()
-            }
-
-            is UserRegistrationEvents.OnEmailChange -> {
-                email = event.email
-                isValidEmail()
-            }
-
-            is UserRegistrationEvents.OnPasswordChange -> {
-                password = event.password
-                isPasswordValid()
-            }
-
-            is UserRegistrationEvents.OnConfirmPasswordChange -> {
-                confirmPassword = event.confirmPassword
-                isConfirmPasswordValid()
-            }
-
             is UserRegistrationEvents.OnRegisterClick -> {
                 registerUser()
             }
@@ -90,11 +105,11 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
     }
 
     private fun isValidEmail(): Boolean {
-        if (email.isEmpty()) {
+        if (email.text.isEmpty()) {
             emailError = "Please enter your email"
             return false
         }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!Patterns.EMAIL_ADDRESS.matcher(email.text).matches()) {
             emailError = "Please enter a valid email"
             return false
         }
@@ -103,11 +118,11 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
     }
 
     private fun isNameValid(): Boolean {
-        if (name.isEmpty()) {
+        if (name.text.isEmpty()) {
             nameError = "Please enter your name"
             return false
         }
-        if (name.length < 3) {
+        if (name.text.length < 3) {
             nameError = "Name should be greater then 3 character"
             return false
         }
@@ -116,11 +131,11 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
     }
 
     private fun isPasswordValid(): Boolean {
-        if (password.isEmpty()) {
+        if (password.text.isEmpty()) {
             passwordError = "Please enter your password"
             return false
         }
-        if (password.length < 3) {
+        if (password.text.length < 3) {
             passwordError = "Password should be greater then 3 character"
             return false
         }
@@ -129,13 +144,12 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
     }
 
     private fun isConfirmPasswordValid(): Boolean {
-        if (confirmPassword == password) {
-            confirmPasswordError = null
-            return true
-        }else{
+        if (confirmPassword.text.toString() != password.text.toString()) {
             confirmPasswordError = "Password didn't match"
             return false
         }
+        confirmPasswordError = null
+        return true
     }
 
     fun isRegistrationFormValid(): Boolean {
@@ -148,13 +162,13 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
                 _registrationState.value = AppState.Loading
                 val result = userAuthRepository.register(
                     AuthRegisterRequest(
-                        name = name,
-                        email = email,
-                        password = password
+                        name = name.text.toString(),
+                        email = email.text.toString(),
+                        password = password.text.toString()
                     )
                 )
                 if (result.isSuccessful) {
-                    tokenManager.saveTempRegisteredEmail(email)
+                    tokenManager.saveTempRegisteredEmail(email.text.toString())
                     _registrationState.value = AppState.Success("You've successfully registered")
                 } else {
                     _registrationState.value = AppState.Error("Something went wrong")

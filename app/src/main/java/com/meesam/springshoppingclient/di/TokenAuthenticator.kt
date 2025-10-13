@@ -44,8 +44,8 @@ class TokenAuthenticator @Inject constructor(
         // 4. Save the new tokens
         if(newTokens.isSuccessful && newTokens.body() != null){
             newTokens.body()?.let { newToken->
-                Log.d("Refresh Token Call",newToken.token)
-                tokenManager.saveToken(newToken.token, Constants.ACCESS_TOKEN)
+                Log.d("Refresh Token Call",newToken.accessToken)
+                tokenManager.saveToken(newToken.accessToken, Constants.ACCESS_TOKEN)
                 tokenManager.saveToken(newToken.refreshToken, Constants.REFRESH_TOKEN)
                 val userDetailString = Gson().toJson(newToken.user)
                 tokenManager.saveUserDetail(userDetailString)
@@ -53,7 +53,7 @@ class TokenAuthenticator @Inject constructor(
         }
         // 5. Retry the original request with the new access token
         return response.request.newBuilder()
-            .header("Authorization", "Bearer ${newTokens.body()?.token}")
+            .header("Authorization", "Bearer ${newTokens.body()?.accessToken}")
             .build()
     }
 }

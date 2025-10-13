@@ -11,6 +11,7 @@ object AppDestinations {
     const val HOME_ROUTE = "home"
 
     const val ONBOARDING_ROUTE ="on_boarding"
+    const val DEMO_ROUTE ="demo_route"
 
     const val ADMIN_HOME = "admin_home"
     const val ADMIN_CATEGORY = "admin_category"

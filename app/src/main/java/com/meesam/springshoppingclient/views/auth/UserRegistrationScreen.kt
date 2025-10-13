@@ -11,15 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Loop
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,6 +32,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.meesam.springshoppingclient.events.UserRegistrationEvents
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.viewmodel.RegistrationViewModel
+import com.meesam.springshoppingclient.views.common.InputPasswordField
+import com.meesam.springshoppingclient.views.common.InputTextField
 import com.meesam.springshoppingclient.views.theme.AppTheme
 
 
@@ -63,143 +64,103 @@ fun RegisterForm(
         )
         Spacer(Modifier.height(50.dp))
 
-        ElevatedCard(modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp)) {
+        ElevatedCard(
+            modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
+        ) {
             Column(
                 modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 20.dp)
             ) {
-                OutlinedTextField(
-                    value = registrationViewModel.name,
-                    enabled =  !isLoading,
-                    onValueChange = {
-                        registrationViewModel.onEvent(UserRegistrationEvents.OnNameChange(it))
-                    },
-                    placeholder = {
-                        Text("Enter your name")
-                    },
-                    label = {
-                        Text("Name")
-                    },
-                    isError = registrationViewModel.nameError !=null,
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Text(
+                    "Name",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.9f),
+                    modifier = Modifier.padding(start = 8.dp)
                 )
-                if (registrationViewModel.nameError != null) {
-                    Text(
-                        registrationViewModel.nameError.toString(),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = registrationViewModel.email,
-                    enabled =  !isLoading,
-                    onValueChange = {
-                        registrationViewModel.onEvent(UserRegistrationEvents.OnEmailChange(it))
-                    },
-                    placeholder = {
-                        Text("Enter your email")
-                    },
-                    label = {
-                        Text("Email")
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    isError = registrationViewModel.emailError !=null,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Spacer(Modifier.height(5.dp))
+                InputTextField(
+                    textFieldState = registrationViewModel.name,
+                    isError = registrationViewModel.nameError != null,
+                    errorMessage = registrationViewModel.nameError.toString(),
+                    placeholder = "Please enter your name",
+                    leadingIcon = Icons.Outlined.Person,
+                    enabled = true
                 )
-                if (registrationViewModel.emailError != null) {
-                    Text(
-                        registrationViewModel.emailError.toString(),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = registrationViewModel.password,
-                    enabled =  !isLoading,
-                    onValueChange = {
-                        registrationViewModel.onEvent(UserRegistrationEvents.OnPasswordChange(it))
-                    },
-                    placeholder = {
-                        Text("Enter your password")
-                    },
-                    label = {
-                        Text("Password")
-                    },
-                    isError = registrationViewModel.passwordError !=null,
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Email",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.9f),
+                    modifier = Modifier.padding(start = 8.dp)
                 )
-                if (registrationViewModel.passwordError != null) {
-                    Text(
-                        registrationViewModel.passwordError.toString(),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = registrationViewModel.confirmPassword,
-                    enabled =  !isLoading,
-                    onValueChange = {
-                        registrationViewModel.onEvent(UserRegistrationEvents.OnConfirmPasswordChange(it))
-                    },
-                    placeholder = {
-                        Text("Enter your password")
-                    },
-                    label = {
-                        Text("Confirm Password")
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    isError = registrationViewModel.confirmPasswordError !=null,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                Spacer(Modifier.height(5.dp))
+                InputTextField(
+                    textFieldState = registrationViewModel.email,
+                    isError = registrationViewModel.emailError != null,
+                    errorMessage = registrationViewModel.emailError.toString(),
+                    placeholder = "Please enter your email",
+                    leadingIcon = Icons.Outlined.Email,
+                    enabled = true
                 )
-                if (registrationViewModel.confirmPasswordError != null) {
-                    Text(
-                        registrationViewModel.confirmPasswordError.toString(),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Password",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.9f),
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+                Spacer(Modifier.height(5.dp))
+                InputPasswordField(
+                    textFieldState = registrationViewModel.password,
+                    isError = registrationViewModel.passwordError != null,
+                    errorMessage = registrationViewModel.passwordError.toString(),
+                    placeholder = "Please enter your password",
+                    leadingIcon = Icons.Outlined.Lock,
+                    enabled = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Confirm Password",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.9f),
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+                Spacer(Modifier.height(5.dp))
+                InputPasswordField(
+                    textFieldState = registrationViewModel.confirmPassword,
+                    isError = registrationViewModel.confirmPasswordError != null,
+                    errorMessage = registrationViewModel.confirmPasswordError.toString(),
+                    placeholder = "Confirm password",
+                    leadingIcon = Icons.Outlined.Lock,
+                    enabled = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
                         registrationViewModel.onEvent(UserRegistrationEvents.OnRegisterClick)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    enabled = registrationViewModel.isFormValid && !isLoading ,
+                    enabled = registrationViewModel.isFormValid && !isLoading,
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    if(isLoading){
+                    if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp
                         )
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(if(isLoading) "Creating account..." else "Register")
+                    Text(if (isLoading) "Creating account..." else "Register")
                 }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     "Already have an Account?",
                     modifier = Modifier
@@ -217,11 +178,15 @@ fun RegisterForm(
 }
 
 @Composable
-fun UserRegistrationScreen(modifier: Modifier = Modifier, onRegisterSuccess:()-> Unit, onBackToLogin: () -> Unit) {
+fun UserRegistrationScreen(
+    modifier: Modifier = Modifier,
+    onRegisterSuccess: () -> Unit,
+    onBackToLogin: () -> Unit
+) {
     val registrationViewModel: RegistrationViewModel = hiltViewModel()
     val registerState by registrationViewModel.registrationState.collectAsState()
 
-    when(registerState){
+    when (registerState) {
         is AppState.Error -> {
             Column(
                 modifier = modifier.fillMaxSize(),
@@ -232,14 +197,16 @@ fun UserRegistrationScreen(modifier: Modifier = Modifier, onRegisterSuccess:()->
                 Text("Some thing went wrong")
             }
         }
-       is AppState.Idle, is AppState.Loading -> {
+
+        is AppState.Idle, is AppState.Loading -> {
             RegisterForm(
                 registerState = registerState,
                 registrationViewModel = registrationViewModel
-            ){
+            ) {
                 onBackToLogin()
             }
-       }
+        }
+
         is AppState.Success -> {
             onRegisterSuccess()
         }
@@ -250,6 +217,6 @@ fun UserRegistrationScreen(modifier: Modifier = Modifier, onRegisterSuccess:()->
 @Preview(showBackground = true)
 fun UserRegistrationScreenPrev() {
     AppTheme {
-        UserRegistrationScreen(onRegisterSuccess = {  }) {}
+        UserRegistrationScreen(onRegisterSuccess = { }) {}
     }
 }

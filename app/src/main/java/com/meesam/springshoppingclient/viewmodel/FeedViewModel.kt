@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-class FeedViewModel :
+@HiltViewModel
+class FeedViewModel @Inject constructor() :
     ViewModel() {
     private var _categories = MutableStateFlow<AppState<List<CategoryResponse>>>(AppState.Loading)
     val categories: StateFlow<AppState<List<CategoryResponse>>> = _categories.asStateFlow()

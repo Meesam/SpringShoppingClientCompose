@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,20 +18,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.meesam.springshoppingclient.navigation.AppDestinations
+import com.meesam.springshoppingclient.viewmodel.ProfileViewModel
 import com.meesam.springshoppingclient.views.auth.OtpScreen
 import com.meesam.springshoppingclient.views.auth.UserLoginScreen
 import com.meesam.springshoppingclient.views.auth.UserRegistrationScreen
+import com.meesam.springshoppingclient.views.common.DemoTextField
 import com.meesam.springshoppingclient.views.home.HomeScreen
 import com.meesam.springshoppingclient.views.onboarding.OnBoardingScreen
 import com.meesam.springshoppingclient.views.theme.AppTheme
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.meesam.springshoppingclient.views.products.ProductDetailScreen
+import com.meesam.springshoppingclient.views.products.ProductScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -63,13 +64,9 @@ fun App(){
 @Composable
 fun AppNavigation() {
     val mainNavController = rememberNavController()
-    //val profileViewModel: ProfileViewModel = hiltViewModel()
-    //val isLoadingInitialUser by profileViewModel.isLoadingInitialUser.collectAsState()
-    //val isUserLoggedIn by profileViewModel.isUserLoggedIn.collectAsState()
-
-    val isLoadingInitialUser = false
-    val isUserLoggedIn = false
-
+    val profileViewModel: ProfileViewModel = hiltViewModel()
+    val isLoadingInitialUser by profileViewModel.isLoadingInitialUser.collectAsState()
+    val isUserLoggedIn by profileViewModel.isUserLoggedIn.collectAsState()
     if (isLoadingInitialUser) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -86,6 +83,9 @@ fun AppNavigation() {
             startDestination = startDestination,
         ) {
 
+            composable(AppDestinations.DEMO_ROUTE) {
+                DemoTextField()
+            }
             composable(AppDestinations.ONBOARDING_ROUTE) {
                 OnBoardingScreen(onNavigateToLogin = {
                     mainNavController.navigate(AppDestinations.LOGIN_ROUTE)
@@ -153,14 +153,14 @@ fun AppNavigation() {
             }*/
 
 
-            /*composable(AppDestinations.PRODUCT_ROUTE) {
+            composable(AppDestinations.PRODUCT_ROUTE) {
                 ProductScreen(
                     onProductClick = {userId ->
                         mainNavController.navigate(AppDestinations.productDetailRoute(userId))
                     }
                 )
-            }*/
-            /* composable(
+            }
+            composable(
                  route = AppDestinations.PRODUCT_DETAIL_ROUTE_PATTERN,
                  arguments = listOf(
                      navArgument(AppDestinations.PRODUCT_ID_KEY) {
@@ -184,7 +184,7 @@ fun AppNavigation() {
                              mainNavController.popBackStack()
                          })
                  }
-             }*/
+             }
         }
     }
 

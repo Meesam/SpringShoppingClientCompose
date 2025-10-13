@@ -24,8 +24,8 @@ sealed class NavigationCommand {
 }
 
 
-
-class ProfileViewModel :
+@HiltViewModel
+class ProfileViewModel @Inject constructor(private val tokenManager: TokenManager) :
     ViewModel() {
 
     private var _userProfile = MutableStateFlow<AppState<UserResponse?>>(AppState.Loading)
@@ -45,7 +45,7 @@ class ProfileViewModel :
     val showEditProfileBottomSheet: StateFlow<Boolean> = _showEditProfileBottomSheet.asStateFlow()
 
     init {
-       // checkIfTokenExist()
+       checkIfTokenExist()
        // getUserProfile()
     }
 
@@ -65,15 +65,11 @@ class ProfileViewModel :
         }
     }
 
-   /* private fun checkIfTokenExist(){
+    private fun checkIfTokenExist(){
         _isLoadingInitialUser.value = true
-        if(tokenManager.getToken(Constants.ACCESS_TOKEN) != null){
-           _isUserLoggedIn.value = true
-       }else {
-           _isUserLoggedIn.value = false
-       }
+        _isUserLoggedIn.value = tokenManager.getToken(Constants.ACCESS_TOKEN) != null
         _isLoadingInitialUser.value = false
-    }*/
+    }
 
     /*fun getUserProfile() {
         _isLoadingInitialUser.value = true

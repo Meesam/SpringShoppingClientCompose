@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-
-class ProductsViewModel  :
+@HiltViewModel
+class ProductsViewModel @Inject constructor()  :
     ViewModel() {
 
     private var products = MutableStateFlow<AppState<List<Product?>>>(AppState.Loading)
