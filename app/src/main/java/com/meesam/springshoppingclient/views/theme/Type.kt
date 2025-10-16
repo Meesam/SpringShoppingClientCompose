@@ -1,7 +1,9 @@
 package com.meesam.springshoppingclient.views.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.text.googlefonts.Font
 import com.meesam.springshoppingclient.R
@@ -16,19 +18,22 @@ val provider = GoogleFont.Provider(
 
 val bodyFontFamily = FontFamily(
     Font(
-        googleFont = GoogleFont("Nunito"),
+        googleFont = GoogleFont("nunito"),
         fontProvider = provider,
     )
 )
 
 val displayFontFamily = FontFamily(
     Font(
-        googleFont = GoogleFont("Nunito"),
+        googleFont = GoogleFont("nunito"),
         fontProvider = provider,
     )
 )
 
-// Default Material 3 typography values
+//val bodyFontFamily = FontFamily( Font(R.font.nunito_regular) )
+
+ //val displayFontFamily = FontFamily( Font(R.font.nunito_regular) )
+
 val baseline = Typography()
 
 val AppTypography = Typography(

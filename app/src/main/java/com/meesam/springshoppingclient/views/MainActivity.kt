@@ -53,9 +53,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun App(){
     Surface(modifier = Modifier
-        .background(color = MaterialTheme.colorScheme.surface)
-        .fillMaxSize()
-        .padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
+        .background(color = MaterialTheme.colorScheme.surfaceContainerLowest)
+        .fillMaxSize()) {
         AppNavigation()
     }
 }

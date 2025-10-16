@@ -1,7 +1,9 @@
 package com.meesam.springshoppingclient.views.home
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
@@ -32,11 +34,11 @@ fun HomeScreen(mainNavController: NavHostController, isAdminLoggedIn: Boolean, o
 
     Scaffold(
         topBar = {
-            Box(modifier = Modifier.padding(16.dp)){
-                AppTopBar()
-            }
-
+            Spacer(Modifier.width(16.dp))
+            AppTopBar()
         },
+
+
         bottomBar = {
             BottomNavigationBar(
                 currentRoute = currentBottomTabRoute,

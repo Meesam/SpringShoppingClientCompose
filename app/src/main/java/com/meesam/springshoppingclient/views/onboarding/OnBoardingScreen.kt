@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,13 +19,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.meesam.springshoppingclient.R
+import com.meesam.springshoppingclient.views.common.PrimaryButton
 import com.meesam.springshoppingclient.views.theme.AppTheme
+import com.meesam.springshoppingclient.views.theme.primaryLight
+import com.meesam.springshoppingclient.views.theme.subHeading
 
 @Composable
 fun OnBoardingScreen(
@@ -35,7 +44,8 @@ fun OnBoardingScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 20.dp),
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .padding(start = 20.dp, end = 20.dp, top = 52.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
@@ -45,52 +55,58 @@ fun OnBoardingScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(400.dp)
-                .clip(RoundedCornerShape(20.dp))
+                .clip(MaterialTheme.shapes.extraLarge)
         )
+
         Column(
             modifier = modifier
-                .fillMaxSize()
-                .padding(horizontal = 30.dp, vertical = 30.dp),
+                .padding(horizontal = 25.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 "Various Collection Of the Latest Products",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = FontFamily(Font(R.font.nunito_regular))
+                ),
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
-            Spacer(Modifier.height(15.dp))
+            Spacer(Modifier.height(16.dp))
             Text(
                 "Contrary to popular belief, Lorem Ipsum is not simply random text.",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_regular))
+                ),
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
             )
-            Spacer(Modifier.height(20.dp))
-            Button(
-                onClick = onNavigateToRegister,
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                Text("Create Account", style = MaterialTheme.typography.titleSmall)
-            }
-            Spacer(Modifier.height(15.dp))
-            Text("Already Have an Account?", modifier = Modifier.clickable {
-                onNavigateToLogin()
-            }, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
         }
+        Spacer(Modifier.height(16.dp))
+        PrimaryButton(title = "Create Account", enabled = true, isLoading = false) {
+            onNavigateToRegister()
+        }
+        Spacer(Modifier.height(16.dp))
+        Text(
+            "Already Have an Account?",
+
+            modifier = Modifier.clickable {
+                onNavigateToLogin()
+            },
+            style = MaterialTheme.typography.titleSmall.copy(
+                fontFamily = FontFamily(Font(R.font.nunito_regular)),
+                fontWeight = FontWeight.SemiBold
+            ),
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }
 
 @Composable
 @Preview(showBackground = true)
 fun OnBoardingScreenPre(modifier: Modifier = Modifier) {
-    AppTheme{
+    AppTheme {
         OnBoardingScreen(
             onNavigateToLogin = {},
             onNavigateToRegister = {}

@@ -94,8 +94,12 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun isPasswordValid(): Boolean {
-        if (password.text.isBlank()) {
-            passwordError = "Password cannot be empty"
+        if (password.text.isEmpty()) {
+            passwordError = "Please enter your password"
+            return false
+        }
+        if (password.text.length < 3) {
+            passwordError = "Password should be greater then 3 character"
             return false
         }
         passwordError = null

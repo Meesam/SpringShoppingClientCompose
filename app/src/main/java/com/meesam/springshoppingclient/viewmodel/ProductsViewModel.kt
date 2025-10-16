@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meesam.springshoppingclient.events.ProductEvent
 import com.meesam.springshoppingclient.model.Product
-import com.meesam.springshoppingclient.repository.ProductRepository
 import com.meesam.springshoppingclient.states.AppState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

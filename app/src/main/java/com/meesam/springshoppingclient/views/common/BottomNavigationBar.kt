@@ -71,17 +71,9 @@ fun BottomNavigationBar(
     NavigationBar(
         //containerColor = Color(0XFFFFFFFF),
         //contentColor = Color(0XFF31488E),
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-        modifier = Modifier.zIndex(0.5f).graphicsLayer{
-            shape = RoundedCornerShape(
-                topStart = 20.dp,
-                topEnd = 20.dp,
-                bottomStart = 20.dp,
-                bottomEnd = 20.dp
-            )
-            clip = true
-        }
+        //containerColor = MaterialTheme.colorScheme.surface,
+       // contentColor = MaterialTheme.colorScheme.onSurface,
+        //modifier = Modifier.border(width = 1.dp, color = MaterialTheme.colorScheme.outline)
     ) {
         items.forEach { item ->
             val customIndicatorColor = MaterialTheme.colorScheme.secondary
@@ -89,7 +81,14 @@ fun BottomNavigationBar(
 
             NavigationBarItem(
                 icon = {
-                    Box(
+
+                    Icon(
+                        item.icon,
+                        contentDescription = item.title,
+                        modifier = Modifier.size(24.dp),
+                       // tint = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary
+                    )
+                    /*Box(
                         modifier = Modifier
                             .then(
                                 if (selected) {
@@ -101,23 +100,18 @@ fun BottomNavigationBar(
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            item.icon,
-                            contentDescription = item.title,
-                            modifier = Modifier.size(24.dp),
-                            tint = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary
-                        )
-                    }
+
+                    }*/
                 },
                 label = {
                     Text(
                         item.title,
-                        color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary
+                       // color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary
                     )
                 },
                 selected = selected,
                 onClick = { onTabSelected(item.route) },
-                colors = NavigationBarItemColors(
+                /*colors = NavigationBarItemColors(
                     selectedIconColor = Color(0XFFFFFFFF),
                     selectedTextColor = Color(0XFFFFFFFF),
                     selectedIndicatorColor = Color.Transparent,
@@ -125,8 +119,7 @@ fun BottomNavigationBar(
                     unselectedTextColor = Color(0XFFFFFFFF),
                     disabledIconColor = Color(0XFFFFFFFF),
                     disabledTextColor = Color(0XFFFFFFFF),
-
-                    ),
+                    )*/
                 interactionSource = null,
             )
         }

@@ -41,10 +41,14 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.views.theme.AppTheme
+import com.meesam.springshoppingclient.views.theme.inputBackGround
 
 
 @Composable
@@ -54,7 +58,8 @@ fun DemoTextField(modifier: Modifier = Modifier) {
     Column(
         modifier
             .fillMaxSize()
-            .padding(16.dp), verticalArrangement = Arrangement.Center,
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
         Alignment.CenterHorizontally
     ) {
 
@@ -89,16 +94,11 @@ fun InputTextField(
     enabled: Boolean? = true,
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    // Determine border color based on state precedence: error -> focus -> default
     val borderColor = when {
         isError -> MaterialTheme.colorScheme.error
         isFocused -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        else -> MaterialTheme.colorScheme.surfaceContainerLowest
     }
-
-    //val iconColor =
-    //if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-
     val iconColor = when {
         isError -> MaterialTheme.colorScheme.error
         isFocused -> MaterialTheme.colorScheme.primary
@@ -107,10 +107,10 @@ fun InputTextField(
 
     BasicTextField(
         state = textFieldState,
-        lineLimits = TextFieldLineLimits.SingleLine,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         textStyle = LocalTextStyle.current.copy(
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontFamily = FontFamily(Font(R.font.nunito_regular))
         ),
         enabled = enabled ?: true,
         modifier = modifier
@@ -118,17 +118,20 @@ fun InputTextField(
             .onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp)),
+            .border(
+                1.dp,
+                borderColor,
+                RoundedCornerShape(12.dp)
+            ),
         decorator = { innerTextField ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        if (enabled == true) MaterialTheme.colorScheme.surface.copy(0.7f) else Color(
+                        if (enabled == true) inputBackGround else Color(
                             0XFFCCCCCC
-                        ).copy(0.7f),
-                        RoundedCornerShape(percent = 30)
+                        ), RoundedCornerShape(percent = 30)
                     )
                     .padding(horizontal = 8.dp, vertical = 12.dp)
             ) {
@@ -139,8 +142,7 @@ fun InputTextField(
                 Box(modifier = Modifier.weight(1f)) {
                     if (textFieldState.text.isEmpty()) {
                         Text(
-                            placeholder,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f)
+                            placeholder, color = MaterialTheme.colorScheme.outlineVariant
                         )
                     }
                     innerTextField()
@@ -156,12 +158,10 @@ fun InputTextField(
                                 textFieldState.edit {
                                     replace(0, textFieldState.text.length, "")
                                 }
-                            }
-                    )
+                            })
                 }
             }
-        }
-    )
+        })
 
     if (isError && errorMessage != null) {
         Text(
@@ -184,17 +184,11 @@ fun InputPasswordField(
     enabled: Boolean? = true,
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    // var isFilled by remember { mutableStateOf(false) }
-    // Determine border color based on state precedence: error -> focus -> default
     val borderColor = when {
         isError -> MaterialTheme.colorScheme.error
         isFocused -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        else -> MaterialTheme.colorScheme.surfaceContainerLowest
     }
-
-    //val iconColor =
-    //if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-
     val iconColor = when {
         isError -> MaterialTheme.colorScheme.error
         isFocused -> MaterialTheme.colorScheme.primary
@@ -215,7 +209,7 @@ fun InputPasswordField(
             }
             .border(
                 1.dp,
-                if (textFieldState.text.isEmpty()) borderColor else MaterialTheme.colorScheme.primary,
+                 borderColor,
                 RoundedCornerShape(12.dp)
             ),
         decorator = { innerTextField ->
@@ -224,10 +218,9 @@ fun InputPasswordField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        if (enabled == true) MaterialTheme.colorScheme.surface.copy(0.7f) else Color(
+                        if (enabled == true) inputBackGround else Color(
                             0XFFCCCCCC
-                        ).copy(0.7f),
-                        RoundedCornerShape(percent = 30)
+                        ), RoundedCornerShape(percent = 30)
                     )
                     .padding(horizontal = 8.dp, vertical = 12.dp)
             ) {
@@ -238,8 +231,7 @@ fun InputPasswordField(
                 Box(modifier = Modifier.weight(1f)) {
                     if (textFieldState.text.isEmpty()) {
                         Text(
-                            placeholder,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f)
+                            placeholder, color = MaterialTheme.colorScheme.outlineVariant
                         )
                     }
                     innerTextField()
@@ -255,12 +247,10 @@ fun InputPasswordField(
                                 textFieldState.edit {
                                     replace(0, textFieldState.text.length, "")
                                 }
-                            }
-                    )
+                            })
                 }
             }
-        }
-    )
+        })
 
     if (isError && errorMessage != null) {
         Text(

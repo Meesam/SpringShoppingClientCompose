@@ -85,6 +85,9 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
 
+    //implementation(libs.androidx.compose.ui.text.google.fonts.v193)
+    implementation(libs.androidx.compose.ui.text.google.fonts.v166)
+
     //implementation(libs.androidx.compose.foundation.text2)
 
 }

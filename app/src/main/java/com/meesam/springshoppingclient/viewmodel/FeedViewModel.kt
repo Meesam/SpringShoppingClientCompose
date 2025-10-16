@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.meesam.springshoppingclient.events.FeedEvents
 import com.meesam.springshoppingclient.model.CategoryResponse
 import com.meesam.springshoppingclient.model.Product
-import com.meesam.springshoppingclient.repository.ProductRepository
 import com.meesam.springshoppingclient.repository.category.CategoryRepository
 import com.meesam.springshoppingclient.states.AppState
 import dagger.hilt.android.lifecycle.HiltViewModel

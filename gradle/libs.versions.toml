@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.0"
+androidxUiTextGoogleFonts = "1.6.6"
 coilCompose = "2.7.0"
 firebaseBom = "34.3.0"
 firebaseFirestoreKtx = "25.1.4"
@@ -26,9 +27,12 @@ googleFirebaseFirestoreKtx = "26.0.0"
 material3 = "1.4.0"
 uiTextGoogleFonts = "1.9.2"
 uiText = "1.9.3"
+uiTextGoogleFontsVersion = "1.9.3"
 
 [libraries]
 androidx-compose-foundation-text2 = { module = "androidx.compose.foundation:foundation-text2", version.ref = "foundationText2" }
+androidx-compose-ui-text-google-fonts-v166 = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "androidxUiTextGoogleFonts" }
+androidx-compose-ui-text-google-fonts-v193 = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFontsVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }

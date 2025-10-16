@@ -4,10 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,13 +46,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppTopBar() {
-        CustomizableSearchBar(
+    CustomizableSearchBar(
             query = "",
             onQueryChange = {},
             onSearch = {},
             searchResults = listOf("hello", "hell", "he"),
             onResultClick = {  })
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
@@ -98,7 +99,6 @@ fun CustomizableSearchBar(
                     placeholder = placeholder,
                     leadingIcon = leadingIcon,
                     trailingIcon = trailingIcon,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.tertiary, shape = RoundedCornerShape(25.dp))
                 )
             },
             expanded = expanded,
