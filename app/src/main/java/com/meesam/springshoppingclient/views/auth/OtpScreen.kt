@@ -29,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,9 +48,14 @@ import com.meesam.springshoppingclient.events.OtpEvents
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.viewmodel.OtpViewModel
 import com.meesam.springshoppingclient.views.common.InputTextField
+import com.meesam.springshoppingclient.views.common.LinkButton
+import com.meesam.springshoppingclient.views.common.OtpInputField
 import com.meesam.springshoppingclient.views.common.PrimaryButton
 import com.meesam.springshoppingclient.views.theme.AppTheme
+import com.meesam.springshoppingclient.views.theme.success
 import kotlinx.coroutines.launch
+
+private const val OTP_LENGTH = 6
 
 @Composable
 fun OtpScreen(modifier: Modifier = Modifier, onOtpSuccess: () -> Unit) {
@@ -68,24 +74,30 @@ fun OtpScreen(modifier: Modifier = Modifier, onOtpSuccess: () -> Unit) {
         }
 
         is AppState.Idle, is AppState.Loading, is AppState.Success -> {
-            OtpForm(modifier = modifier, otpViewModel = otpViewModel, otpState = otpState){
+            OtpForm(modifier = modifier, otpViewModel = otpViewModel, otpState = otpState) {
                 onOtpSuccess()
             }
         }
 
         //is AppState.Success<*> -> {
-            //onOtpSuccess()
+        //onOtpSuccess()
         //}
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState: AppState<*>, onOtpSuccess:()->Unit) {
+fun OtpForm(
+    modifier: Modifier = Modifier,
+    otpViewModel: OtpViewModel,
+    otpState: AppState<*>,
+    onOtpSuccess: () -> Unit
+) {
     val isLoading = otpState is AppState.Loading
     val isSuccess = otpState is AppState.Success
     val tempEmail by otpViewModel.tempEmail.collectAsState()
     val sheetState = rememberModalBottomSheetState()
+
     Column(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
@@ -123,9 +135,11 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Verification Code", style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = FontFamily(Font(R.font.nunito_bold))
-                ))
+                Text(
+                    "Verification Code", style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_bold))
+                    )
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     "We have send the code on your registered email",
@@ -136,8 +150,8 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                     color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
                 )
                 Text(
-                    tempEmail ?:"Email not found",
-                    style = MaterialTheme.typography.titleMedium.copy(
+                    tempEmail ?: "Email not found",
+                    style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = FontFamily(Font(R.font.nunito_bold))
                     ),
                 )
@@ -150,25 +164,14 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 20.dp)
         ) {
-
-            OutlinedTextField(
-                value = otpViewModel.otp, onValueChange = {
-                    otpViewModel.onEvent(OtpEvents.OnOtpChange(it))
-                }, placeholder = {
-                    Text("Enter Otp")
-                }, label = {
-                    Text("OTP")
-                },
-                isError = otpViewModel.otpError != null && !isLoading,
-                shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()
+            OtpInputField(
+                otpText = otpViewModel.otp,
+                onOtpTextChange = { newOtp ->
+                    if (newOtp.length <= OTP_LENGTH && newOtp.all { it.isDigit() }) {
+                        otpViewModel.onEvent(OtpEvents.OnOtpChange(newOtp))
+                    }
+                }
             )
-            if (otpViewModel.otpError != null) {
-                Text(
-                    otpViewModel.otpError.toString(),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
             Spacer(modifier = Modifier.height(16.dp))
             PrimaryButton(
                 title = if (!isLoading) "Verify" else "Activating Account...",
@@ -177,18 +180,8 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
             ) {
                 otpViewModel.onEvent(OtpEvents.onVerifyClick)
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Don't receive the code?", style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = FontFamily(Font(R.font.nunito_bold))
-                ))
-                TextButton(onClick = {}) {
-                    Text("Resend", style = MaterialTheme.typography.titleSmall)
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
+            LinkButton(title = "Don't receive the code?", buttonTitle = "Resend") { }
         }
 
         if (isSuccess) {
@@ -198,8 +191,10 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                 modifier = Modifier.fillMaxWidth()
             ) {
                 // Sheet content
-                Column(modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 50.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -210,7 +205,7 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                             modifier = Modifier
                                 .size(60.dp)
                                 .background(
-                                    color = MaterialTheme.colorScheme.primary, shape = CircleShape
+                                    color = success, shape = CircleShape
                                 ), contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -237,24 +232,21 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 "Congratulations, Your account is activated, Please login to explore",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontFamily = FontFamily(Font(R.font.nunito_regular))
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface.copy(0.5f),
                                 textAlign = TextAlign.Center,
                             )
-                            Button(
-                                onClick = {
-                                    onOtpSuccess()
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = MaterialTheme.shapes.medium,
-                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                            Spacer(modifier = Modifier.height(16.dp))
+                            PrimaryButton(
+                                title = "Go to Login",
+                                enabled = true,
+                                isLoading = false
                             ) {
-                                Text(
-                                    "Go to Login",
-                                    style = MaterialTheme.typography.titleSmall
-                                )
+                                onOtpSuccess()
                             }
                         }
-
                     }
                 }
             }
@@ -263,10 +255,11 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OtpScreenUI(modifier: Modifier = Modifier, onOtpSuccess: () -> Unit) {
-    //val otpViewModel: OtpViewModel = hiltViewModel()
-    //val otpState by otpViewModel.otpState.collectAsState()
+    val isLoading = false
+    val isSuccess = true
     val otpState: AppState<*> = AppState.Idle
     when (otpState) {
         is AppState.Error -> {
@@ -280,10 +273,12 @@ fun OtpScreenUI(modifier: Modifier = Modifier, onOtpSuccess: () -> Unit) {
         }
 
         AppState.Idle -> {
+            val sheetState = rememberModalBottomSheetState()
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(top = 50.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                    .padding(top = 80.dp, bottom = 20.dp, start = 16.dp, end = 16.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -317,16 +312,25 @@ fun OtpScreenUI(modifier: Modifier = Modifier, onOtpSuccess: () -> Unit) {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Verification Code", style = MaterialTheme.typography.titleLarge)
+                        Text(
+                            "Verification Code", style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = FontFamily(Font(R.font.nunito_bold))
+                            )
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             "We have send the code on your registered email",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = FontFamily(Font(R.font.nunito_bold))
+                            ),
                             textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
                         )
                         Text(
-                            "meesam.engineer@gmail.com",
-                            style = MaterialTheme.typography.titleMedium
+                            "Email not found",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = FontFamily(Font(R.font.nunito_bold))
+                            ),
                         )
                     }
 
@@ -338,40 +342,101 @@ fun OtpScreenUI(modifier: Modifier = Modifier, onOtpSuccess: () -> Unit) {
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 20.dp)
                 ) {
 
-                    OutlinedTextField(
-                        value = "", onValueChange = {
-                            //otpViewModel.onEvent(OtpEvents.OnOtpChange(it))
-                        }, placeholder = {
-                            Text("Enter Otp")
-                        }, label = {
-                            Text("OTP")
-                        },
-                        // isError = otpViewModel.otpError != null,
-                        shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()
+                    OtpInputField(
+                        otpText = "",
+                        onOtpTextChange = { newOtp ->
+                            if (newOtp.length <= OTP_LENGTH && newOtp.all { it.isDigit() }) {
+                                //otpViewModel.onEvent(OtpEvents.OnOtpChange(newOtp))
+                            }
+                        }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            // otpViewModel.onEvent(OtpEvents.onVerifyClick)
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                        //  enabled = otpViewModel.isFormValid
+                    PrimaryButton(
+                        title = if (!isLoading) "Verify" else "Activating Account...",
+                        enabled = true,
+                        isLoading = isLoading
                     ) {
-                        Text("Verify", style = MaterialTheme.typography.titleSmall)
+                        //otpViewModel.onEvent(OtpEvents.onVerifyClick)
                     }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LinkButton(title = "Don't receive the code?", buttonTitle = "Resend") { }
+                }
+
+                if (isSuccess) {
+                    ModalBottomSheet(
+                        onDismissRequest = {},
+                        sheetState = sheetState,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Don't receive the code?", style = MaterialTheme.typography.bodySmall)
-                        TextButton(onClick = {}) {
-                            Text("Resend", style = MaterialTheme.typography.titleSmall)
+                        // Sheet content
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 50.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(60.dp)
+                                        .background(
+                                            color = success, shape = CircleShape
+                                        ), contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        "Register Success",
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        "Congratulations, Your account is activated, Please login to explore",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontFamily = FontFamily(Font(R.font.nunito_regular))
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                    Button(
+                                        onClick = {
+                                            onOtpSuccess()
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = MaterialTheme.shapes.medium,
+                                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
+                                    ) {
+                                        Text(
+                                            "Go to Login",
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                    }
+                                }
+
+                            }
                         }
                     }
-
                 }
             }
         }

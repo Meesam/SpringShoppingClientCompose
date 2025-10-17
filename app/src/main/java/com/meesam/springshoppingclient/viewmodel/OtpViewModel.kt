@@ -3,6 +3,7 @@ package com.meesam.springshoppingclient.viewmodel
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,8 +36,12 @@ class OtpViewModel @Inject constructor(private val userAuthRepository: UserAuthR
         private set
 
     val isFormValid by derivedStateOf {
-        otp.isNotBlank() && otpError == null
+        otp.length == 6
     }
+
+    /*val isOtpComplete by
+        derivedStateOf { otp.length == 6 }
+    }*/
 
     fun onEvent(events: OtpEvents) {
         when (events) {

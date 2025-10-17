@@ -43,6 +43,7 @@ import com.meesam.springshoppingclient.viewmodel.RegistrationViewModel
 import com.meesam.springshoppingclient.views.common.AppErr
 import com.meesam.springshoppingclient.views.common.InputPasswordField
 import com.meesam.springshoppingclient.views.common.InputTextField
+import com.meesam.springshoppingclient.views.common.LinkButton
 import com.meesam.springshoppingclient.views.common.PrimaryButton
 import com.meesam.springshoppingclient.views.theme.AppTheme
 
@@ -170,19 +171,9 @@ fun RegisterForm(
                 registrationViewModel.onEvent(UserRegistrationEvents.OnRegisterClick)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                "Already have an Account?",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onBackToLogin()
-                    },
-                style = MaterialTheme.typography.titleSmall.copy(
-                    fontFamily = FontFamily(Font(R.font.nunito_regular))
-                ),
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
-            )
+            LinkButton(title ="Already have an Account?", buttonTitle = "Login" ) {
+                onBackToLogin()
+            }
         }
     }
 }

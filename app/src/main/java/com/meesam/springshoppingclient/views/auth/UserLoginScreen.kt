@@ -45,6 +45,7 @@ import com.meesam.springshoppingclient.viewmodel.LoginViewModel
 import com.meesam.springshoppingclient.views.common.AppErr
 import com.meesam.springshoppingclient.views.common.InputPasswordField
 import com.meesam.springshoppingclient.views.common.InputTextField
+import com.meesam.springshoppingclient.views.common.LinkButton
 import com.meesam.springshoppingclient.views.common.PrimaryButton
 import com.meesam.springshoppingclient.views.theme.AppTheme
 
@@ -170,20 +171,10 @@ fun LoginForm(
             ) {
                 loginViewModel.onEvent(UserLoginEvents.OnLoginClick)
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                "Don't have an Account?",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onNavigateToRegister()
-                    },
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
-            )
+            LinkButton(title ="Don't have an Account?", buttonTitle = "Register" ) {
+                onNavigateToRegister()
+            }
         }
 
     }

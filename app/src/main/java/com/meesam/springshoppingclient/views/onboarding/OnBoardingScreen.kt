@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.meesam.springshoppingclient.R
+import com.meesam.springshoppingclient.views.common.LinkButton
 import com.meesam.springshoppingclient.views.common.PrimaryButton
 import com.meesam.springshoppingclient.views.theme.AppTheme
 import com.meesam.springshoppingclient.views.theme.primaryLight
@@ -88,18 +89,9 @@ fun OnBoardingScreen(
             onNavigateToRegister()
         }
         Spacer(Modifier.height(16.dp))
-        Text(
-            "Already Have an Account?",
-
-            modifier = Modifier.clickable {
-                onNavigateToLogin()
-            },
-            style = MaterialTheme.typography.titleSmall.copy(
-                fontFamily = FontFamily(Font(R.font.nunito_regular)),
-                fontWeight = FontWeight.SemiBold
-            ),
-            color = MaterialTheme.colorScheme.primary
-        )
+        LinkButton(title ="Already Have an Account?", buttonTitle = "Register" ) {
+            onNavigateToLogin()
+        }
     }
 }
 
