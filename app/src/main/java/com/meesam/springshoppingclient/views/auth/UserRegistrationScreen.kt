@@ -1,8 +1,10 @@
 package com.meesam.springshoppingclient.views.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -19,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +40,7 @@ import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.events.UserRegistrationEvents
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.viewmodel.RegistrationViewModel
+import com.meesam.springshoppingclient.views.common.AppErr
 import com.meesam.springshoppingclient.views.common.InputPasswordField
 import com.meesam.springshoppingclient.views.common.InputTextField
 import com.meesam.springshoppingclient.views.common.PrimaryButton
@@ -50,12 +55,12 @@ fun RegisterForm(
     onBackToLogin: () -> Unit,
 ) {
     val isLoading = registerState is AppState.Loading
+    val isError = registerState is AppState.Error
     Column(
         modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .padding(top = 80.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
-
         ) {
         Text(
             "Create Account",
@@ -74,13 +79,16 @@ fun RegisterForm(
             color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
 
         )
-        Spacer(Modifier.height(50.dp))
         Column(
-            modifier
+            Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                 .padding(vertical = 50.dp)
         ) {
+            if(isError){
+                AppErr(errorMessage = registerState.errorMessage.toString())
+                Spacer(Modifier.height(16.dp))
+            }
             Text(
                 "Name",
                 style = MaterialTheme.typography.titleMedium.copy(
@@ -189,18 +197,7 @@ fun UserRegistrationScreen(
     val registerState by registrationViewModel.registrationState.collectAsState()
 
     when (registerState) {
-        is AppState.Error -> {
-            Column(
-                modifier = modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-
-            ) {
-                Text("Some thing went wrong")
-            }
-        }
-
-        is AppState.Idle, is AppState.Loading -> {
+        is AppState.Idle, is AppState.Loading, is AppState.Error -> {
             RegisterForm(
                 registerState = registerState,
                 registrationViewModel = registrationViewModel

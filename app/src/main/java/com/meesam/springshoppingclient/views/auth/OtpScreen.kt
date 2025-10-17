@@ -36,13 +36,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.events.OtpEvents
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.viewmodel.OtpViewModel
+import com.meesam.springshoppingclient.views.common.InputTextField
+import com.meesam.springshoppingclient.views.common.PrimaryButton
 import com.meesam.springshoppingclient.views.theme.AppTheme
 import kotlinx.coroutines.launch
 
@@ -83,8 +88,8 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
     val sheetState = rememberModalBottomSheetState()
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(top = 50.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .padding(top = 80.dp, bottom = 20.dp, start = 16.dp, end = 16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -118,16 +123,23 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Verification Code", style = MaterialTheme.typography.titleLarge)
+                Text("Verification Code", style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_bold))
+                ))
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     "We have send the code on your registered email",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_bold))
+                    ),
                     textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
                 )
                 Text(
                     tempEmail ?:"Email not found",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_bold))
+                    ),
                 )
             }
 
@@ -138,6 +150,7 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 20.dp)
         ) {
+
             OutlinedTextField(
                 value = otpViewModel.otp, onValueChange = {
                     otpViewModel.onEvent(OtpEvents.OnOtpChange(it))
@@ -157,33 +170,21 @@ fun OtpForm(modifier: Modifier = Modifier, otpViewModel: OtpViewModel, otpState:
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    otpViewModel.onEvent(OtpEvents.onVerifyClick)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium,
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 10.dp),
-                enabled = otpViewModel.isFormValid && !isLoading
+            PrimaryButton(
+                title = if (!isLoading) "Verify" else "Activating Account...",
+                enabled = otpViewModel.isFormValid && !isLoading,
+                isLoading = isLoading
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp
-                    )
-                    Spacer(Modifier.width(8.dp))
-                }
-                Text(
-                    if (!isLoading) "Verify" else "Activating Account...",
-                    style = MaterialTheme.typography.titleSmall
-                )
+                otpViewModel.onEvent(OtpEvents.onVerifyClick)
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Don't receive the code?", style = MaterialTheme.typography.bodySmall)
+                Text("Don't receive the code?", style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_bold))
+                ))
                 TextButton(onClick = {}) {
                     Text("Resend", style = MaterialTheme.typography.titleSmall)
                 }

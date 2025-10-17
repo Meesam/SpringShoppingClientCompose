@@ -42,6 +42,7 @@ import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.events.UserLoginEvents
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.viewmodel.LoginViewModel
+import com.meesam.springshoppingclient.views.common.AppErr
 import com.meesam.springshoppingclient.views.common.InputPasswordField
 import com.meesam.springshoppingclient.views.common.InputTextField
 import com.meesam.springshoppingclient.views.common.PrimaryButton
@@ -55,23 +56,32 @@ fun UserLoginScreen(
     val loginViewModel: LoginViewModel = hiltViewModel()
     val loginState by loginViewModel.loginUiState.collectAsState()
 
-    when(loginState){
-        is AppState.Error -> {}
-        is AppState.Idle, is AppState.Loading -> {
-            LoginForm(modifier = modifier, loginViewModel = loginViewModel, loginState = loginState){
+    when (loginState) {
+        is AppState.Idle, is AppState.Loading,is AppState.Error  -> {
+            LoginForm(
+                modifier = modifier,
+                loginViewModel = loginViewModel,
+                loginState = loginState
+            ) {
                 onNavigateToRegister()
             }
         }
         is AppState.Success<*> -> {
-                onLoginSuccess()
+            onLoginSuccess()
         }
     }
 }
 
 @Composable
-fun LoginForm(modifier: Modifier = Modifier, loginViewModel: LoginViewModel, loginState: AppState<*>, onNavigateToRegister: () -> Unit) {
+fun LoginForm(
+    modifier: Modifier = Modifier,
+    loginViewModel: LoginViewModel,
+    loginState: AppState<*>,
+    onNavigateToRegister: () -> Unit
+) {
 
     val isLoading = loginState is AppState.Loading
+    val isError = loginState is AppState.Error
     Column(
         modifier
             .fillMaxSize()
@@ -97,68 +107,84 @@ fun LoginForm(modifier: Modifier = Modifier, loginViewModel: LoginViewModel, log
         )
 
 
-            Column(modifier
+        Column(
+            modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                .padding(vertical = 50.dp)) {
-                Text(
-                    "Email",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily(Font(R.font.nunito_bold))
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-                Spacer(Modifier.height(5.dp))
-                InputTextField(
-                    textFieldState = loginViewModel.email,
-                    placeholder = "Enter your email",
-                    isError = loginViewModel.emailError !=null,
-                    errorMessage = loginViewModel.emailError.toString(),
-                    leadingIcon = Icons.Outlined.Email,
-                    enabled = !isLoading
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    "Password",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily(Font(R.font.nunito_bold))
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-                Spacer(Modifier.height(5.dp))
-                InputPasswordField(
-                    textFieldState = loginViewModel.password,
-                    placeholder = "Enter your password",
-                    isError = loginViewModel.passwordError !=null,
-                    errorMessage = loginViewModel.passwordError.toString(),
-                    leadingIcon = Icons.Outlined.Lock,
-                    enabled = !isLoading
-                )
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = {}) {
-                        Text("Forgot Password?", textAlign = TextAlign.End, modifier =  Modifier.fillMaxWidth())
-                    }
+                .padding(vertical = 50.dp)
+        ) {
+
+            if (isError) {
+                AppErr(errorMessage = loginState.errorMessage.toString())
+                Spacer(Modifier.height(16.dp))
+            }
+            Text(
+                "Email",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_bold))
+                ),
+                color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
+                modifier = Modifier.padding(start = 8.dp),
+            )
+            Spacer(Modifier.height(5.dp))
+            InputTextField(
+                textFieldState = loginViewModel.email,
+                placeholder = "Enter your email",
+                isError = loginViewModel.emailError != null,
+                errorMessage = loginViewModel.emailError.toString(),
+                leadingIcon = Icons.Outlined.Email,
+                enabled = !isLoading
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                "Password",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_bold))
+                ),
+                color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
+                modifier = Modifier.padding(start = 8.dp)
+            )
+            Spacer(Modifier.height(5.dp))
+            InputPasswordField(
+                textFieldState = loginViewModel.password,
+                placeholder = "Enter your password",
+                isError = loginViewModel.passwordError != null,
+                errorMessage = loginViewModel.passwordError.toString(),
+                leadingIcon = Icons.Outlined.Lock,
+                enabled = !isLoading
+            )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = {}) {
+                    Text(
+                        "Forgot Password?",
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
+            }
 
-                PrimaryButton(
-                    title = if (isLoading) "Signing In..." else "Sign In",
-                    enabled = loginViewModel.isFormValid && !isLoading,
-                    isLoading = isLoading
-                ) {
-                    loginViewModel.onEvent(UserLoginEvents.OnLoginClick)
-                }
+            PrimaryButton(
+                title = if (isLoading) "Signing In..." else "Sign In",
+                enabled = loginViewModel.isFormValid && !isLoading,
+                isLoading = isLoading
+            ) {
+                loginViewModel.onEvent(UserLoginEvents.OnLoginClick)
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Don't have an Account?", modifier = Modifier
+            Text(
+                "Don't have an Account?",
+                modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
                         onNavigateToRegister()
-                    }, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center)
-            }
+                    },
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
 
     }
 }

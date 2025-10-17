@@ -1,5 +1,6 @@
 package com.meesam.springshoppingclient.views.common
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -162,15 +163,15 @@ fun InputTextField(
                 }
             }
         })
-
-    if (isError && errorMessage != null) {
+    AnimatedVisibility(isError && errorMessage != null) {
         Text(
-            text = errorMessage,
+            text = errorMessage!!,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier.padding(top = 4.dp, start = 8.dp)
         )
     }
+
 }
 
 @Composable
@@ -209,7 +210,7 @@ fun InputPasswordField(
             }
             .border(
                 1.dp,
-                 borderColor,
+                borderColor,
                 RoundedCornerShape(12.dp)
             ),
         decorator = { innerTextField ->
@@ -252,9 +253,9 @@ fun InputPasswordField(
             }
         })
 
-    if (isError && errorMessage != null) {
+    AnimatedVisibility(isError && errorMessage != null) {
         Text(
-            text = errorMessage,
+            text = errorMessage!!,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = 4.dp)

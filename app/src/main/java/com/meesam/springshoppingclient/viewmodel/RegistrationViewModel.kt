@@ -9,8 +9,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import com.meesam.springshoppingclient.events.UserRegistrationEvents
 import com.meesam.springshoppingclient.model.AuthRegisterRequest
+import com.meesam.springshoppingclient.model.ErrorResponse
 import com.meesam.springshoppingclient.repository.auth.UserAuthRepository
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.utils.TokenManager
@@ -86,8 +88,7 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
         name.text.isNotBlank() &&
                 email.text.isNotBlank() &&
                 password.text.isNotBlank() &&
-                confirmPassword.text.isNotBlank() &&
-
+                confirmPassword.text == password.text &&
                 nameError == null &&
                 emailError == null &&
                 passwordError == null &&
@@ -160,18 +161,25 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
         if(isRegistrationFormValid()){
             viewModelScope.launch {
                 _registrationState.value = AppState.Loading
-                val result = userAuthRepository.register(
-                    AuthRegisterRequest(
-                        name = name.text.toString(),
-                        email = email.text.toString(),
-                        password = password.text.toString()
+                try {
+                    val result = userAuthRepository.register(
+                        AuthRegisterRequest(
+                            name = name.text.toString(),
+                            email = email.text.toString(),
+                            password = password.text.toString()
+                        )
                     )
-                )
-                if (result.isSuccessful) {
-                    tokenManager.saveTempRegisteredEmail(email.text.toString())
-                    _registrationState.value = AppState.Success("You've successfully registered")
-                } else {
-                    _registrationState.value = AppState.Error("Something went wrong")
+                    if (result.isSuccessful) {
+                        tokenManager.saveTempRegisteredEmail(email.text.toString())
+                        _registrationState.value = AppState.Success("You've successfully registered")
+                    } else {
+                        val gson = Gson()
+                        val err = result.errorBody()?.string()
+                        val errorResponse = gson.fromJson(err, ErrorResponse::class.java)
+                        _registrationState.value = AppState.Error(err?.isEmpty()?.let { if(!it) errorResponse.message else  "Something went wrong" })
+                    }
+                }catch (ex: Exception){
+                    _registrationState.value = AppState.Error(ex.message.toString())
                 }
             }
         }else {
