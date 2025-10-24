@@ -1,5 +1,6 @@
 package com.meesam.springshoppingclient.views.common
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +18,11 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Menu
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -25,16 +31,24 @@ import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.navigation.AppDestinations
 import com.meesam.springshoppingclient.navigation.BottomNavigationItem
 
@@ -46,38 +60,41 @@ fun BottomNavigationBar(
 ) {
     val items = if (!isAdminLoggedIn) {
         listOf(
-            BottomNavigationItem("Home", Icons.Filled.Home, AppDestinations.FEED_ROUTE),
+            BottomNavigationItem("Home", Icons.Outlined.Home, AppDestinations.FEED_ROUTE),
             BottomNavigationItem(
                 "Explore",
                 Icons.Filled.Animation,
                 AppDestinations.PRODUCT_ROUTE
             ),
-            BottomNavigationItem("Favorite", Icons.Filled.Favorite, AppDestinations.FAVORITE_ROUTE),
-            BottomNavigationItem("Cart", Icons.Filled.ShoppingCart, AppDestinations.CART_ROUTE),
-            BottomNavigationItem("Profile", Icons.Filled.Person, AppDestinations.PROFILE_ROUTE)
+            BottomNavigationItem("Favorite", Icons.Outlined.Favorite, AppDestinations.FAVORITE_ROUTE),
+            BottomNavigationItem("Cart", Icons.Outlined.ShoppingCart, AppDestinations.CART_ROUTE),
+            BottomNavigationItem("Profile", Icons.Outlined.Person, AppDestinations.PROFILE_ROUTE)
         )
     } else {
         listOf(
-            BottomNavigationItem("Home", Icons.Filled.Home, AppDestinations.ADMIN_DASHBOARD),
+            BottomNavigationItem("Home", Icons.Outlined.Home, AppDestinations.ADMIN_DASHBOARD),
             BottomNavigationItem(
                 "Product",
                 Icons.Filled.ShoppingCart,
                 AppDestinations.ADMIN_PRODUCT
             ),
-            BottomNavigationItem("Category", Icons.Filled.Menu, AppDestinations.ADMIN_CATEGORY),
-            BottomNavigationItem("Profile", Icons.Filled.Person, AppDestinations.PROFILE_ROUTE)
+            BottomNavigationItem("Category", Icons.Outlined.Menu, AppDestinations.ADMIN_CATEGORY),
+            BottomNavigationItem("Profile", Icons.Outlined.Person, AppDestinations.PROFILE_ROUTE)
         )
     }
+
     NavigationBar(
-        //containerColor = Color(0XFFFFFFFF),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         //contentColor = Color(0XFF31488E),
         //containerColor = MaterialTheme.colorScheme.surface,
        // contentColor = MaterialTheme.colorScheme.onSurface,
-        //modifier = Modifier.border(width = 1.dp, color = MaterialTheme.colorScheme.outline)
+        modifier = Modifier.border(width = 1.dp, color = MaterialTheme.colorScheme.outline.copy(0.1f))
+
     ) {
         items.forEach { item ->
             val customIndicatorColor = MaterialTheme.colorScheme.secondary
             val selected = currentRoute == item.route
+
 
             NavigationBarItem(
                 icon = {
@@ -106,20 +123,23 @@ fun BottomNavigationBar(
                 label = {
                     Text(
                         item.title,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontFamily = FontFamily(Font(R.font.nunito_bold))
+                        )
                        // color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary
                     )
                 },
                 selected = selected,
                 onClick = { onTabSelected(item.route) },
-                /*colors = NavigationBarItemColors(
-                    selectedIconColor = Color(0XFFFFFFFF),
-                    selectedTextColor = Color(0XFFFFFFFF),
+                colors = NavigationBarItemColors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
                     selectedIndicatorColor = Color.Transparent,
-                    unselectedIconColor = Color(0XFFFFFFFF),
-                    unselectedTextColor = Color(0XFFFFFFFF),
-                    disabledIconColor = Color(0XFFFFFFFF),
-                    disabledTextColor = Color(0XFFFFFFFF),
-                    )*/
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                    disabledIconColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
+                    ),
                 interactionSource = null,
             )
         }

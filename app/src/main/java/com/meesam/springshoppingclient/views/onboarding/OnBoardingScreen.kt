@@ -89,7 +89,7 @@ fun OnBoardingScreen(
             onNavigateToRegister()
         }
         Spacer(Modifier.height(16.dp))
-        LinkButton(title ="Already Have an Account?", buttonTitle = "Register" ) {
+        LinkButton(title ="Already Have an Account?", buttonTitle = "Login" ) {
             onNavigateToLogin()
         }
     }

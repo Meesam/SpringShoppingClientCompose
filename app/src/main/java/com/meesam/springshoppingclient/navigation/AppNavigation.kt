@@ -10,6 +10,8 @@ object AppDestinations {
     const val REGISTER_ROUTE = "register"
     const val HOME_ROUTE = "home"
 
+    const val SEARCH_SUGGESTION_ROUTE ="search_suggestion"
+
     const val ONBOARDING_ROUTE ="on_boarding"
     const val DEMO_ROUTE ="demo_route"
 

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -35,6 +36,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.meesam.springshoppingclient.views.products.ProductDetailScreen
 import com.meesam.springshoppingclient.views.products.ProductScreen
+import com.meesam.springshoppingclient.views.search.SearchSuggestionScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -42,6 +44,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             AppTheme {
                 App()
@@ -75,6 +78,7 @@ fun AppNavigation() {
             AppDestinations.HOME_ROUTE
         } else {
             AppDestinations.ONBOARDING_ROUTE
+            //AppDestinations.HOME_ROUTE
         }
 
         NavHost(
@@ -97,6 +101,14 @@ fun AppNavigation() {
                 OtpScreen(){
                     mainNavController.navigate(AppDestinations.LOGIN_ROUTE) {
                         popUpTo(AppDestinations.OTP_ROUTE) { inclusive = true }
+                    }
+                }
+            }
+
+            composable(AppDestinations.SEARCH_SUGGESTION_ROUTE) {
+                SearchSuggestionScreen(){
+                    mainNavController.navigate(AppDestinations.HOME_ROUTE) {
+                        popUpTo(AppDestinations.SEARCH_SUGGESTION_ROUTE) { inclusive = true }
                     }
                 }
             }

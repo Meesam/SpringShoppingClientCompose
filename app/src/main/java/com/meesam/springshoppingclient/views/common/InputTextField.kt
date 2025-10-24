@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
@@ -93,6 +94,8 @@ fun InputTextField(
     placeholder: String,
     leadingIcon: ImageVector?,
     enabled: Boolean? = true,
+    keyBoardOption: KeyboardOptions = KeyboardOptions.Default,
+    leadingIconAction: () -> Unit? = {}
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val borderColor = when {
@@ -113,6 +116,7 @@ fun InputTextField(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontFamily = FontFamily(Font(R.font.nunito_regular))
         ),
+        keyboardOptions = keyBoardOption,
         enabled = enabled ?: true,
         modifier = modifier
             .fillMaxWidth()
@@ -137,7 +141,13 @@ fun InputTextField(
                     .padding(horizontal = 8.dp, vertical = 12.dp)
             ) {
                 if (leadingIcon != null) {
-                    Icon(leadingIcon, contentDescription = null, tint = iconColor)
+                    Icon(
+                        leadingIcon,
+                        contentDescription = null,
+                        tint = iconColor,
+                        modifier = Modifier.clickable {
+                            leadingIconAction()
+                        })
                 }
                 Spacer(Modifier.width(8.dp))
                 Box(modifier = Modifier.weight(1f)) {
@@ -262,6 +272,7 @@ fun InputPasswordField(
         )
     }
 }
+
 
 @Composable
 @Preview(showBackground = true)

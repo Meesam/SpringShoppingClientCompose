@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Email
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -123,7 +125,8 @@ fun RegisterForm(
                 errorMessage = registrationViewModel.emailError.toString(),
                 placeholder = "Please enter your email",
                 leadingIcon = Icons.Outlined.Email,
-                enabled = true
+                enabled = true,
+                keyBoardOption = KeyboardOptions(keyboardType=KeyboardType.Email)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(

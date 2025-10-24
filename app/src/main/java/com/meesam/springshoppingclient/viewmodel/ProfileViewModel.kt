@@ -46,7 +46,7 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
 
     init {
        checkIfTokenExist()
-       // getUserProfile()
+       getUserProfile()
     }
 
     fun onEvent(event: UserProfileEvent) {
@@ -71,7 +71,7 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
         _isLoadingInitialUser.value = false
     }
 
-    /*fun getUserProfile() {
+    fun getUserProfile() {
         _isLoadingInitialUser.value = true
         _userProfile.value = AppState.Loading
         viewModelScope.launch {
@@ -91,7 +91,7 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
             }
 
         }
-    }*/
+    }
 
 
 

@@ -44,6 +44,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,9 +56,12 @@ import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.events.UserProfileEvent
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.viewmodel.ProfileViewModel
+import com.meesam.springshoppingclient.views.theme.AppTheme
+import com.meesam.springshoppingclient.views.theme.inputBackGround
+import com.meesam.springshoppingclient.views.theme.subHeading
 
 @Composable
-fun ProfileScreen(profileViewModel: ProfileViewModel = hiltViewModel(), onSignOut: () -> Unit) {
+fun ProfileScreen(modifier: Modifier = Modifier, profileViewModel: ProfileViewModel = hiltViewModel(), onSignOut: () -> Unit) {
 
     val userProfile by profileViewModel.userProfile.collectAsState()
     val editProfileSheet by profileViewModel.showEditProfileBottomSheet.collectAsState()
@@ -64,7 +69,7 @@ fun ProfileScreen(profileViewModel: ProfileViewModel = hiltViewModel(), onSignOu
     when (val result = userProfile) {
         is AppState.Error -> {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -75,7 +80,7 @@ fun ProfileScreen(profileViewModel: ProfileViewModel = hiltViewModel(), onSignOu
         is AppState.Idle -> {}
         is AppState.Loading -> {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -86,13 +91,14 @@ fun ProfileScreen(profileViewModel: ProfileViewModel = hiltViewModel(), onSignOu
         is AppState.Success -> {
             if (result.data != null) {
                 ProfileUi(
-                    result.data.name,
-                    result.data.email,
+                    modifier = modifier,
+                    name =result.data.name,
+                    email = result.data.email,
                     profilePicture = result.data.profilePicUrl,
                     dob = result.data.dob,
                     onClick = onSignOut,
                 )
-            }
+           }
         }
     }
 }
@@ -100,6 +106,7 @@ fun ProfileScreen(profileViewModel: ProfileViewModel = hiltViewModel(), onSignOu
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileUi(
+    modifier: Modifier = Modifier,
     name: String,
     email: String,
     dob: String,
@@ -108,15 +115,16 @@ fun ProfileUi(
 ) {
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(20.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .padding(16.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp))
-                .padding(20.dp)
+                .background(subHeading.copy(0.3f), shape = RoundedCornerShape(10.dp))
+                .padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -139,14 +147,16 @@ fun ProfileUi(
                     if (profilePicture.isNullOrEmpty()) {
                         Text(
                             name.first().toString(),
-                            color = Color.White,
+                            color = subHeading,
                             style = TextStyle(fontWeight = FontWeight.Medium, fontSize = 30.sp)
                         )
                     } else {
                         AsyncImage(
                             model = profilePicture,
                             contentDescription = "Profile Picture",
-                            modifier = Modifier.fillMaxSize().clip(shape = CircleShape), // Fill the Box
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(shape = CircleShape), // Fill the Box
                             contentScale = ContentScale.FillBounds, // Or ContentScale.Fit, as needed
                             placeholder = painterResource(id = R.drawable.ic_launcher_background), // Optional: Placeholder
                             error = painterResource(id = R.drawable.ic_launcher_foreground) // Optional: Error image
@@ -157,118 +167,165 @@ fun ProfileUi(
                 Column() {
                     Text(
                         name,
-                        style = TextStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp,
-                            color = MaterialTheme.colorScheme.background
-                        )
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = FontFamily(Font(R.font.nunito_bold))
+                        ),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(dob, color = MaterialTheme.colorScheme.background)
-                    Text(email, color = MaterialTheme.colorScheme.background)
+                    Text(
+                        dob, style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily(Font(R.font.nunito_bold))
+                        ), color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
+                    )
+                    Text(
+                        email, style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily(Font(R.font.nunito_bold))
+                        ), color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
+                    )
                 }
 
-                Spacer(modifier = Modifier.width(20.dp))
-
             }
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10.dp))
+                .background(subHeading.copy(0.3f), shape = RoundedCornerShape(10.dp))
                 .padding(start = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.AccountCircle, contentDescription = "Account Information")
+                Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = "Account Information",
+                    tint = MaterialTheme.colorScheme.primary.copy(1f)
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Edit Profile")
+                Text(
+                    "Edit Profile", style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_regular))
+                    ), color = MaterialTheme.colorScheme.onSurface.copy(0.5f)
+                )
+            }
+            IconButton(onClick = {}) {
+                Icon(
+                    Icons.Default.KeyboardArrowRight,
+                    contentDescription = "Open",
+                    tint = MaterialTheme.colorScheme.onSurface.copy(0.7f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(subHeading.copy(0.3f), shape = RoundedCornerShape(10.dp))
+                .padding(start = 15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.Lock,
+                    contentDescription = "Account Information",
+                    tint = MaterialTheme.colorScheme.primary.copy(1f)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    "Change Password", style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_regular))
+                    ), color = MaterialTheme.colorScheme.onSurface.copy(0.7f)
+                )
             }
             IconButton(onClick = {}) {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Open")
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10.dp))
+                .background(subHeading.copy(0.3f), shape = RoundedCornerShape(10.dp))
                 .padding(start = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Lock, contentDescription = "Account Information")
+                Icon(
+                    Icons.Default.Notifications,
+                    contentDescription = "Account Information",
+                    tint = MaterialTheme.colorScheme.primary.copy(1f)
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Chane Password")
+                Text(
+                    "Notifications", style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_regular))
+                    ), color = MaterialTheme.colorScheme.onSurface.copy(0.7f)
+                )
             }
             IconButton(onClick = {}) {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Open")
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10.dp))
+                .background(subHeading.copy(0.3f), shape = RoundedCornerShape(10.dp))
                 .padding(start = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Notifications, contentDescription = "Account Information")
+                Icon(
+                    Icons.Default.Language,
+                    contentDescription = "Account Information",
+                    tint = MaterialTheme.colorScheme.primary.copy(1f)
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Notifications")
+                Text(
+                    "Language", style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_regular))
+                    ), color = MaterialTheme.colorScheme.onSurface.copy(0.7f)
+                )
             }
             IconButton(onClick = {}) {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Open")
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10.dp))
+                .background(subHeading.copy(0.3f), shape = RoundedCornerShape(10.dp))
                 .padding(start = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Language, contentDescription = "Account Information")
+                Icon(
+                    Icons.Default.Security,
+                    contentDescription = "Account Information",
+                    tint = MaterialTheme.colorScheme.primary.copy(1f)
+                )
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Language")
+                Text(
+                    "Security", style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily(Font(R.font.nunito_regular))
+                    ), color = MaterialTheme.colorScheme.onSurface.copy(0.7f)
+                )
             }
             IconButton(onClick = {}) {
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Open")
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(10.dp))
-                .padding(start = 15.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Security, contentDescription = "Account Information")
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Security")
-            }
-            IconButton(onClick = {}) {
-                Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Open")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -288,10 +345,13 @@ fun ProfileUi(
 @Preview(showBackground = true)
 @Composable
 fun ProfilePrev() {
-    ProfileUi(
-        "Meesam",
-        "meesam.engineer@gmail.com",
-        profilePicture = "ff",
-        dob = "02-May-1986",
-        onClick = {})
+    AppTheme {
+        ProfileUi(
+            name = "Meesam",
+            email =  "meesam.engineer@gmail.com",
+            profilePicture = "ff",
+            dob = "02-May-1986",
+            onClick = {})
+    }
+
 }
