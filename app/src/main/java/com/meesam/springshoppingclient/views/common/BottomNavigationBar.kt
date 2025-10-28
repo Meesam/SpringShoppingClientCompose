@@ -1,11 +1,14 @@
 package com.meesam.springshoppingclient.views.common
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -66,7 +69,11 @@ fun BottomNavigationBar(
                 Icons.Filled.Animation,
                 AppDestinations.PRODUCT_ROUTE
             ),
-            BottomNavigationItem("Favorite", Icons.Outlined.Favorite, AppDestinations.FAVORITE_ROUTE),
+            BottomNavigationItem(
+                "Favorite",
+                Icons.Outlined.Favorite,
+                AppDestinations.FAVORITE_ROUTE
+            ),
             BottomNavigationItem("Cart", Icons.Outlined.ShoppingCart, AppDestinations.CART_ROUTE),
             BottomNavigationItem("Profile", Icons.Outlined.Person, AppDestinations.PROFILE_ROUTE)
         )
@@ -87,38 +94,42 @@ fun BottomNavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         //contentColor = Color(0XFF31488E),
         //containerColor = MaterialTheme.colorScheme.surface,
-       // contentColor = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.border(width = 1.dp, color = MaterialTheme.colorScheme.outline.copy(0.1f))
+        // contentColor = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.border(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline.copy(0.1f)
+        )
 
     ) {
         items.forEach { item ->
-            val customIndicatorColor = MaterialTheme.colorScheme.secondary
             val selected = currentRoute == item.route
-
-
             NavigationBarItem(
                 icon = {
-
-                    Icon(
-                        item.icon,
-                        contentDescription = item.title,
-                        modifier = Modifier.size(24.dp),
-                       // tint = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary
-                    )
-                    /*Box(
+                    Box(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .then(
                                 if (selected) {
                                     Modifier
-                                        .clip(CircleShape) // Or any other Shape
-                                        .background(customIndicatorColor)
+                                        .drawBehind{
+                                            drawLine(
+                                                color = Color(0xFF39349E),
+                                                start = Offset(x= 0f,y= -10f),
+                                                end = Offset(x= size.width, -10f),
+                                                strokeWidth = 12f
+                                            )
+                                        }
                                 } else Modifier
                             )
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-
-                    }*/
+                        Icon(
+                            item.icon,
+                            contentDescription = item.title,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
                 },
                 label = {
                     Text(
@@ -126,7 +137,6 @@ fun BottomNavigationBar(
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontFamily = FontFamily(Font(R.font.nunito_bold))
                         )
-                       // color = if (selected) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.secondary
                     )
                 },
                 selected = selected,
@@ -139,9 +149,11 @@ fun BottomNavigationBar(
                     unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
                     disabledIconColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
                     disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
-                    ),
+                ),
                 interactionSource = null,
             )
+
+
         }
     }
 }

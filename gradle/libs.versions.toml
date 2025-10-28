@@ -28,6 +28,8 @@ material3 = "1.4.0"
 uiTextGoogleFonts = "1.9.2"
 uiText = "1.9.3"
 uiTextGoogleFontsVersion = "1.9.3"
+foundation = "1.9.4"
+protoliteWellKnownTypes = "18.0.1"
 
 [libraries]
 androidx-compose-foundation-text2 = { module = "androidx.compose.foundation:foundation-text2", version.ref = "foundationText2" }
@@ -71,6 +73,8 @@ google-firebase-firestore-ktx = { group = "com.google.firebase", name = "firebas
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+protolite-well-known-types = { group = "com.google.firebase", name = "protolite-well-known-types", version.ref = "protoliteWellKnownTypes" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -9,6 +9,7 @@ import com.meesam.springshoppingclient.repository.user.UserRepository
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.utils.Constants
 import com.meesam.springshoppingclient.utils.TokenManager
+import com.meesam.springshoppingclient.views.profile.ProfileScreenOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,31 +42,32 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
     private val _isLoadingInitialUser = MutableStateFlow(true)
     val isLoadingInitialUser: StateFlow<Boolean> = _isLoadingInitialUser.asStateFlow()
 
-    private val _showEditProfileBottomSheet = MutableStateFlow<Boolean>(false)
-    val showEditProfileBottomSheet: StateFlow<Boolean> = _showEditProfileBottomSheet.asStateFlow()
+    private val _activeSheetContent = MutableStateFlow<ProfileScreenOptions?>(null)
+    val activeSheetContent = _activeSheetContent.asStateFlow()
 
     init {
-       checkIfTokenExist()
-       getUserProfile()
+        checkIfTokenExist()
+        getUserProfile()
     }
 
     fun onEvent(event: UserProfileEvent) {
         when (event) {
-            UserProfileEvent.onSignOut -> {
-              // userLogout()
+            is UserProfileEvent.OnSignOut -> {
+                // userLogout()
             }
 
-            UserProfileEvent.onEditClick -> {
-                _showEditProfileBottomSheet.value = true
+            is UserProfileEvent.OnDismissSheet -> {
+                _activeSheetContent.value = null
             }
 
-            UserProfileEvent.onDismissSheet -> {
-                _showEditProfileBottomSheet.value = false
+            is UserProfileEvent.OnOptionClick -> {
+                _activeSheetContent.value = event.option
             }
+
         }
     }
 
-    private fun checkIfTokenExist(){
+    private fun checkIfTokenExist() {
         _isLoadingInitialUser.value = true
         _isUserLoggedIn.value = tokenManager.getToken(Constants.ACCESS_TOKEN) != null
         _isLoadingInitialUser.value = false
@@ -92,7 +94,6 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
 
         }
     }
-
 
 
     /*fun userLogout() {

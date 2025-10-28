@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
@@ -84,35 +85,38 @@ fun FeedScreen(
     val recommendedProduct by feedViewModel.recommendedProducts.collectAsState()
     val scrollState = rememberScrollState()
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        // Add some padding around the list
-        contentPadding = PaddingValues(top = maxHeaderHeight),
-        // Add spacing between each item
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // This is the simplest way to create a large number of items.
-        // The `items` block will be repeated 1000 times.
-        item {
-            ProductPager(modifier = Modifier.padding(top = 16.dp))
-        }
-        items(100) { index ->
-            Text(
-                text = "This is a real Feed Item #$index",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onProductClick("productID_$index") }
-                    .padding(vertical = 16.dp)
-            )
-        }
-    }
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+                .graphicsLayer {
+                    translationY = currentOffset * 1f
+                },
+            ) {
+            item {
+                Spacer(modifier = Modifier.height(maxHeaderHeight))
+            }
+            item {
+                ProductPager(modifier = Modifier.padding(top = 16.dp))
+            }
 
-    AppTopBar(
-        mainNavController = mainNavController,
-        currentOffset = currentOffset,
-        maxHeaderHeight = maxHeaderHeight,
-        minHeaderHeight = minHeaderHeight
-    )
+            items(100) { index ->
+                Text(
+                    text = "This is a real Feed Item #$index",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onProductClick("productID_$index") }
+                        .padding(vertical = 16.dp)
+                )
+            }
+        }
+
+        AppTopBar(
+            mainNavController = mainNavController,
+            currentOffset = currentOffset,
+            maxHeaderHeight = maxHeaderHeight,
+            minHeaderHeight = minHeaderHeight
+        )
+    }
 
     // val categoryList =
     // listOf("All", "Mobile", "Electronics", "Books", "Clothes", "Fashion", "Home Appliances")

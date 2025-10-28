@@ -34,8 +34,10 @@ import com.meesam.springshoppingclient.views.theme.AppTheme
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.meesam.springshoppingclient.views.payment.PaymentSettingScreen
 import com.meesam.springshoppingclient.views.products.ProductDetailScreen
 import com.meesam.springshoppingclient.views.products.ProductScreen
+import com.meesam.springshoppingclient.views.profile.EditProfileScreen
 import com.meesam.springshoppingclient.views.search.SearchSuggestionScreen
 import dagger.hilt.android.AndroidEntryPoint
 

@@ -1,53 +1,66 @@
 package com.meesam.springshoppingclient.views.category
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material3.Icon
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.events.FeedEvents
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.viewmodel.CategoryViewModel
+import com.meesam.springshoppingclient.views.theme.AppTheme
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 
 data class CategoryItem(val id: Int, val title: String, val isSelected: Boolean)
@@ -79,136 +92,247 @@ fun CategoryList(
     progress: Float
 ) {
 
-    var indicatorOffset by remember { mutableStateOf(0.dp) }
-    var indicatorWidth by remember { mutableStateOf(0.dp) }
+    var selectedItemIndex by remember { mutableIntStateOf(0) }
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-    val animatedIndicatorOffset by animateDpAsState(
-        targetValue = indicatorOffset,
-        label = "indicatorOffset"
-    )
-    val animatedIndicatorWidth by animateDpAsState(
-        targetValue = indicatorWidth,
-        label = "indicatorWidth"
-    )
+    // 1. Animatable for line's offset and width
+    val lineOffsetX = remember { Animatable(0f) }
+    val lineWidth = remember { Animatable(0f) }
 
     val density = LocalDensity.current
+    val lineHeight = 4.dp
+    val itemWidthDp = 85.dp
 
-    LazyRow(
-        modifier = modifier
-            /*.background(
-                color = MaterialTheme.colorScheme.surfaceContainerLowest
-            )*/
-            //.padding(top = 16.dp)
-            .drawBehind {
-                val strokeWidth = 3.dp.toPx()
-                val y = size.height - strokeWidth / 2
-                drawLine(
-                    color = Color(0xFFFFFFFF),
-                    start = Offset(animatedIndicatorOffset.toPx(), y),
-                    end = Offset(
-                        animatedIndicatorOffset.toPx() + animatedIndicatorWidth.toPx(),
-                        y
-                    ),
-                    strokeWidth = strokeWidth
-                )
-            },
-    ) {
-        items(categoryList) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .onGloballyPositioned { layoutCoordinates ->
-                        if (it.isSelected) {
-                            // This is the position of the item within the LazyRow
-                            val itemOffset = layoutCoordinates.positionInParent().x
-                            val itemWidth = layoutCoordinates.size.width
+    LaunchedEffect(selectedItemIndex) {
+        // --- 1. SETUP THE CUSTOM SCROLL ---
+        val scrollAnimatable = Animatable(0f)
+        var prevValue = 0f
 
-                            with(density) {
-                                indicatorOffset = itemOffset.toDp()
-                                indicatorWidth = itemWidth.toDp()
-                            }
-                        }
-                    }
-                    .clickable(
-                        indication = null,
-                        interactionSource = null
-                    ) {
-                        categoryViewModel.onEvent(FeedEvents.onCategorySelect(it.title))
-                    }
+        // The item's desired position after scrolling (e.g., centered or near the start)
+        val targetOffsetPx = with(density) { itemWidthDp.toPx() } * 2 // Adjust this for centering
 
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center, modifier = Modifier
-                        .background(
-                            brush = if (it.isSelected && progress > 0.0f) Brush.verticalGradient(
-                                listOf(Color.DarkGray.copy(0.4f * progress), Color.Transparent)
-                            ) else Brush.verticalGradient(
-                                listOf(
-                                    Color.Transparent,
-                                    Color.Transparent
-                                )
-                            ),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        .padding(8.dp)
-                    //.alpha(progress)
-                ) {
-                    val maxSelectedSize = 26.dp
-                    val minSelectedSize =
-                        22.dp // The size when header is collapsed and item is selected
-                    val maxUnselectedSize = 25.dp
-                    val minUnselectedSize =
-                        21.dp // The size when header is collapsed and item is not selected
+        val selectedItemInfo = lazyListState.layoutInfo.visibleItemsInfo
+            .find { it.index == selectedItemIndex }
 
-                    // 2. Determine which set of sizes to use based on the selection state
-                    val startSize = if (it.isSelected) minSelectedSize else minUnselectedSize
-                    val endSize = if (it.isSelected) maxSelectedSize else maxUnselectedSize
+        val scrollDistance = selectedItemInfo?.let { it.offset - targetOffsetPx } ?: 0f
 
-                    // 3. Calculate the current size using linear interpolation (lerp)
-                    // When progress is 1.0 (expanded), size will be endSize.
-                    // When progress is 0.0 (collapsed), size will be startSize.
-                    val currentIconSize = lerp(
-                        start = startSize,
-                        stop = endSize,
-                        fraction = progress
-                    )
-                    if (progress > 0.0f) {
-                        Icon(
-                            Icons.Outlined.ShoppingCart, contentDescription = "",
-                            modifier = Modifier
-                                .animateContentSize()
-                                .size(currentIconSize),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-
+        // --- 2. CREATE AN OBSERVER using snapshotFlow ---
+        // This coroutine will watch the scrollAnimatable's value.
+        // When the value changes, it will scroll the list by the difference.
+        val scrollJob = launch {
+            snapshotFlow { scrollAnimatable.value }
+                .collect { currentValue ->
+                    val delta = currentValue - prevValue
+                    lazyListState.scrollBy(delta) // This is now in a valid CoroutineScope!
+                    prevValue = currentValue
                 }
+        }
 
-                Text(
-                    it.title,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(bottom = 6.dp)
-                        .align(Alignment.CenterHorizontally)
-                        .width(50.dp),
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontFamily = FontFamily(Font(if (it.isSelected) R.font.nunito_bold else R.font.nunito_regular))
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-            }
-            Spacer(
-                modifier = Modifier.width(
-                    20
-                        .dp
-                )
+        // --- 3. START THE ANIMATIONS ---
+
+        // A. Start the scroll animation. This will trigger the observer above.
+        if (abs(scrollDistance) > 1f) {
+            scrollAnimatable.animateTo(
+                targetValue = scrollDistance,
+                animationSpec = tween(durationMillis = 300, easing = EaseInOut)
             )
+        }
+
+        // B. Once the scroll animation is finished, cancel the observer job to save resources.
+        scrollJob.cancel()
+
+        // C. Animate the indicator line to the item's FINAL position.
+        val finalItemInfo = lazyListState.layoutInfo.visibleItemsInfo
+            .find { it.index == selectedItemIndex }
+
+        finalItemInfo?.let {
+            val animationSpec = tween<Float>(durationMillis = 300, easing = EaseInOut)
+            launch { lineOffsetX.animateTo(it.offset.toFloat(), animationSpec) }
+            launch { lineWidth.animateTo(it.size.toFloat(), animationSpec) }
         }
     }
 
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(65.dp) // Height for the LazyRow and the line
+    ) {
 
+        LazyRow(
+            state = lazyListState,
+            modifier = Modifier
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 8.dp)
+        ) {
+            itemsIndexed(categoryList) { index, item ->
+                ItemCard(
+                    text = item.title,
+                    isSelected = index == selectedItemIndex,
+                    progress = progress,
+                    onClick = {
+                        selectedItemIndex = index
+                        categoryViewModel.onEvent(FeedEvents.onCategorySelect(item.title))
+                    })
+            }
+        }
+
+        // 2. The Line Indicator Box
+        // We use a Box modifier with drawWithContent, which is triggered on every scroll/layout change.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(lineHeight) // The height of the line itself
+                .align(Alignment.BottomStart)
+                .padding(horizontal = 10.dp, vertical = 3.dp)
+                .drawBehind {
+                    // Find the real-time position of the selected item.
+                    val selectedItemInfo =
+                        lazyListState.layoutInfo.visibleItemsInfo.find { it.index == selectedItemIndex }
+
+                    // --- THIS IS THE KEY CHANGE ---
+                    // ONLY update and draw the line IF the selected item is currently visible.
+                    selectedItemInfo?.let { itemInfo ->
+                        // Handle manual scrolling: If no animation is running, snap the line
+                        // to the item's current position.
+                        if (!lineOffsetX.isRunning) {
+                            coroutineScope.launch {
+                                lineOffsetX.animateTo(
+                                    targetValue = itemInfo.offset.toFloat(),
+                                    // A spring is great for tracking changes smoothly.
+                                    // Play with dampingRatio and stiffness to get the feel you want.
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = EaseInOut
+                                    )
+                                )
+                                lineWidth.animateTo(
+                                    targetValue = itemInfo.size.toFloat(),
+                                    animationSpec = tween(
+                                        durationMillis = 300,
+                                        easing = EaseInOut
+                                    )
+                                )
+                            }
+                        }
+
+                        // Always draw the line using the current value from Animatable.
+                        // This block is now only reached when the item is visible.
+                        val y = size.height / 2
+                        drawLine(
+                            color = Color(0xFF39349E),
+                            start = Offset(x = lineOffsetX.value, y = y),
+                            end = Offset(x = lineOffsetX.value + lineWidth.value, y = y),
+                            strokeWidth = 12f,
+                            cap = StrokeCap.Round
+                        )
+                    }
+                }
+        )
+    }
+}
+
+@Composable
+private fun ItemCard(
+    modifier: Modifier = Modifier,
+    text: String,
+    isSelected: Boolean,
+    progress: Float,
+    onClick: () -> Unit,
+) {
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .clickable(indication = null, interactionSource = null) { onClick() }) {
+        Row(modifier = Modifier.graphicsLayer {
+            scaleY = progress
+            scaleX = progress
+        }) {
+            Box(
+                contentAlignment = Alignment.Center, // This centers the Icon
+                modifier = Modifier
+                    .size(40.dp) // Define the total area for the background and icon
+                    .then(
+                        if (isSelected) {
+                            // 2. Use drawBehind to draw the background for the Box
+                            Modifier
+                                .drawBehind {
+                                    // We use `this.size` to get the responsive size of the Box (40.dp x 40.dp in pixels)
+                                    val cornerRadius = CornerRadius(8.dp.toPx())
+                                    drawRoundRect(
+                                        brush = Brush.verticalGradient(
+                                            listOf(
+                                                Color(0xFF39349E).copy(
+                                                    0.5f
+                                                ), Color.White
+                                            )
+                                        ),
+                                        size = this.size, // Draw the rect to fill the entire Box
+                                        cornerRadius = cornerRadius
+                                    )
+                                }
+
+                        } else {
+                            Modifier // If not selected, do nothing
+                        }
+                    )
+
+            ) {
+                // 3. The Icon is placed inside the Box and automatically centered
+                Icon(
+                    Icons.Outlined.AutoStories,
+                    contentDescription = "",
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer.copy(
+                        0.5f
+                    )
+                )
+            }
+        }
+
+
+        Row {
+            Text(
+                text,
+                maxLines = 1,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer.copy(
+                    0.5f
+                ),
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_bold))
+                ),
+                modifier = Modifier.width(80.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ItemCardAnimationPreview() {
+    // This creates an infinitely looping animation value between 0f and 1f
+    val infiniteTransition = rememberInfiniteTransition(label = "progressAnimation")
+    val progress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2000, easing = EaseInOut),
+            repeatMode = RepeatMode.Reverse // It will go 0 -> 1 -> 0 -> 1 ...
+        ),
+        label = "progress"
+    )
+
+    AppTheme {
+        // Now we test the ItemCard with a progress value that we KNOW is changing
+        ItemCard(
+            text = "Animation Test",
+            isSelected = true,
+            progress = progress, // Use the animated progress value here
+            onClick = {}
+        )
+    }
 }
 
 

@@ -56,8 +56,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -92,11 +94,11 @@ fun AppTopBar(
 ) {
 
     val density = LocalDensity.current
-    val maxHeaderHeightPX = with(density){
+    val maxHeaderHeightPX = with(density) {
         maxHeaderHeight.toPx()
     }
 
-    val minHeaderHeightPX = with(density){
+    val minHeaderHeightPX = with(density) {
         minHeaderHeight.toPx()
     }
 
@@ -107,17 +109,27 @@ fun AppTopBar(
     }
 
     Box(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .height(currentHeight)
             .background(
                 brush = Brush.verticalGradient(
                     listOf(
                         MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f),
+                        MaterialTheme.colorScheme.surfaceContainerLowest,
                     )
                 )
             )
+            .drawWithContent {
+                drawContent()
+                val strokeWidth = 2.dp.toPx()
+                drawLine(
+                    color = Color(0xFF39349E),
+                    start = Offset(x = 0f, y = size.height - strokeWidth / 2),
+                    end = Offset(x = size.width, y = size.height - strokeWidth / 2),
+                    strokeWidth = 1f
+                )
+            }
             .clipToBounds() // Important to prevent drawing outside bounds
     ) {
         // We use a Column to arrange the scrolling content above the static CategoryList
@@ -139,7 +151,7 @@ fun AppTopBar(
                         .graphicsLayer {
                             // Clamp the translation so it stops at its final position
                             translationY = 0.3f
-            }
+                        }
                         .padding(horizontal = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -165,7 +177,7 @@ fun AppTopBar(
                             )
                             Spacer(Modifier.width(4.dp))
                             Text(
-                                "H.no.19, Gali 10, parwana road...",
+                                "H.no.19, Gali 10, parwana road, New Delhi, 110051",
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 maxLines = 1,
@@ -226,7 +238,7 @@ fun AppTopBar(
             val progress = 1f - (currentOffset / (minHeaderHeightPX - maxHeaderHeightPX))
             CategoryListScreen(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                progress = progress.coerceIn(0f,1f)
+                progress = progress.coerceIn(0f, 1f)
             )
         }
     }

@@ -165,7 +165,6 @@ fun RegisterForm(
                 enabled = true
             )
             Spacer(modifier = Modifier.height(16.dp))
-
             PrimaryButton(
                 title = if (isLoading) "Creating account..." else "Register",
                 enabled = registrationViewModel.isFormValid && !isLoading,

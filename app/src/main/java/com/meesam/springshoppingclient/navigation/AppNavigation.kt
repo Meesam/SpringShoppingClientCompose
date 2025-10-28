@@ -32,6 +32,8 @@ object AppDestinations {
 
     const val ADD_NEW_CARD_ROUTE="add_new_card"
     const val CHECKOUT_ROUTE = "checkout"
+    const val EDIT_PROFILE_ROUTE = "edit_profile"
+    const val PAYMENT_SETTING_ROUTE = "payment_setting"
 
     const val PRODUCT_ID_KEY = "id"
     const val PRODUCT_DETAIL_SCREEN_ROUTE = "product_detail"
@@ -40,4 +42,12 @@ object AppDestinations {
 
     fun productDetailRoute(id: String) = "$PRODUCT_DETAIL_SCREEN_ROUTE/$id"
 
+}
+
+object ProfileSubDestinations{
+    const val PROFILE_DETAILS ="profile/details"
+    const val EDIT_PROFILE = "profile/edit"
+    const val CHANGE_PASSWORD = "profile/changePassword"
+    const val PAYMENT_SETTINGS = "profile/paymentSetting"
+    const val NOTIFICATION_SETTINGS = "profile/notificationSetting"
 }
