@@ -21,15 +21,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.meesam.springshoppingclient.views.theme.AppTheme
+import com.meesam.springshoppingclient.views.theme.success
 import kotlinx.coroutines.delay
 
 @Composable
 fun AppErr(modifier: Modifier = Modifier, errorMessage: String) {
     var isVisible by remember { mutableStateOf(true) }
-
 
     LaunchedEffect(Unit) {
         delay(10_000L)
@@ -80,10 +81,69 @@ fun AppErr(modifier: Modifier = Modifier, errorMessage: String) {
 }
 
 @Composable
+fun AppSuccess(modifier: Modifier = Modifier, successMessage: String) {
+    var isVisible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        delay(10_000L)
+        isVisible = false
+    }
+
+    AnimatedVisibility(
+        visible = isVisible
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(
+                    success,
+                    MaterialTheme.shapes.small
+                )
+                .border(
+                    1.dp,
+                    color = Color.Green,
+                    shape = MaterialTheme.shapes.small
+                )
+                .size(60.dp)
+
+        ) {
+            Text(
+                successMessage,
+                color = MaterialTheme.colorScheme.onError,
+                modifier = Modifier
+                    .align(
+                        Alignment.CenterStart
+                    )
+                    .padding(start = 16.dp)
+            )
+            Icon(
+                Icons.Filled.Clear,
+                contentDescription = "Clear",
+                tint = MaterialTheme.colorScheme.onError,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(24.dp)
+                    .padding(end = 8.dp, top = 8.dp)
+                    .clickable {
+                        isVisible = false
+                    }
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+fun AppSuccessPrev() {
+    AppTheme {
+        AppSuccess(successMessage = "Success")
+    }
+}
+
+@Composable
 @Preview
 fun AppErrPrev() {
     AppTheme {
         AppErr(errorMessage = "Something went wrong")
     }
-
 }

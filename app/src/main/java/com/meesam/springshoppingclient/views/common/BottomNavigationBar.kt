@@ -1,25 +1,18 @@
 package com.meesam.springshoppingclient.views.common
 
+
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Animation
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
@@ -31,29 +24,39 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.navigation.AppDestinations
 import com.meesam.springshoppingclient.navigation.BottomNavigationItem
+import androidx.compose.foundation.interaction.Interaction
+import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.CardGiftcard
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
+
+private object NoRippleInteractionSource : MutableInteractionSource {
+    override val interactions: Flow<Interaction> = emptyFlow()
+    override suspend fun emit(interaction: Interaction) {}
+    override fun tryEmit(interaction: Interaction) = true
+}
 
 @Composable
 fun BottomNavigationBar(
@@ -61,40 +64,49 @@ fun BottomNavigationBar(
     isAdminLoggedIn: Boolean,
     onTabSelected: (String) -> Unit,
 ) {
-    val items = if (!isAdminLoggedIn) {
+    val items =
         listOf(
-            BottomNavigationItem("Home", Icons.Outlined.Home, AppDestinations.FEED_ROUTE),
+            BottomNavigationItem(
+                "Home",
+                if (currentRoute == AppDestinations.FEED_ROUTE) Icons.Filled.Home else Icons.Outlined.Home,
+                AppDestinations.FEED_ROUTE
+            ),
             BottomNavigationItem(
                 "Explore",
-                Icons.Filled.Animation,
+                if (currentRoute == AppDestinations.PRODUCT_ROUTE) Icons.Filled.CardGiftcard else Icons.Outlined.CardGiftcard,
                 AppDestinations.PRODUCT_ROUTE
             ),
             BottomNavigationItem(
                 "Favorite",
-                Icons.Outlined.Favorite,
+                if (currentRoute == AppDestinations.FAVORITE_ROUTE) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
                 AppDestinations.FAVORITE_ROUTE
             ),
-            BottomNavigationItem("Cart", Icons.Outlined.ShoppingCart, AppDestinations.CART_ROUTE),
-            BottomNavigationItem("Profile", Icons.Outlined.Person, AppDestinations.PROFILE_ROUTE)
-        )
-    } else {
-        listOf(
-            BottomNavigationItem("Home", Icons.Outlined.Home, AppDestinations.ADMIN_DASHBOARD),
             BottomNavigationItem(
-                "Product",
-                Icons.Filled.ShoppingCart,
-                AppDestinations.ADMIN_PRODUCT
+                "Cart",
+                if (currentRoute == AppDestinations.CART_ROUTE) Icons.Filled.ShoppingCart else Icons.Outlined.ShoppingCart,
+                AppDestinations.CART_ROUTE
             ),
-            BottomNavigationItem("Category", Icons.Outlined.Menu, AppDestinations.ADMIN_CATEGORY),
-            BottomNavigationItem("Profile", Icons.Outlined.Person, AppDestinations.PROFILE_ROUTE)
+            BottomNavigationItem(
+                "Profile",
+                if (currentRoute == AppDestinations.PROFILE_ROUTE) Icons.Filled.Person else Icons.Outlined.Person,
+                AppDestinations.PROFILE_ROUTE
+            )
+        )
+
+    val animatedSize = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        animatedSize.animateTo(
+            1.2f, animationSpec = tween(
+                durationMillis = 500,
+                delayMillis = 50,
+                easing = LinearOutSlowInEasing
+            )
         )
     }
 
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        //contentColor = Color(0XFF31488E),
-        //containerColor = MaterialTheme.colorScheme.surface,
-        // contentColor = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier.border(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outline.copy(0.1f)
@@ -111,13 +123,29 @@ fun BottomNavigationBar(
                             .then(
                                 if (selected) {
                                     Modifier
-                                        .drawBehind{
+                                        .background(
+                                            brush = Brush.verticalGradient(
+                                                listOf(
+                                                    Color.Transparent,
+                                                    MaterialTheme.colorScheme.primaryContainer.copy(
+                                                        0.3f
+                                                    ),
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .drawBehind {
                                             drawLine(
                                                 color = Color(0xFF39349E),
-                                                start = Offset(x= 0f,y= -10f),
-                                                end = Offset(x= size.width, -10f),
+                                                start = Offset(x = 0f, y = -10f),
+                                                end = Offset(x = size.width, -10f),
                                                 strokeWidth = 12f
                                             )
+                                        }
+                                        .graphicsLayer {
+                                            scaleX = animatedSize.value
+                                            scaleY = animatedSize.value
+                                            clip = true
                                         }
                                 } else Modifier
                             )
@@ -140,7 +168,19 @@ fun BottomNavigationBar(
                     )
                 },
                 selected = selected,
-                onClick = { onTabSelected(item.route) },
+                onClick = {
+                    scope.launch {
+                        animatedSize.snapTo(0f)
+                        animatedSize.animateTo(
+                            1.2f, animationSpec = tween(
+                                durationMillis = 500,
+                                delayMillis = 50,
+                                easing = LinearOutSlowInEasing
+                            )
+                        )
+                    }
+                    onTabSelected(item.route)
+                },
                 colors = NavigationBarItemColors(
                     selectedIconColor = MaterialTheme.colorScheme.primary,
                     selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -150,10 +190,8 @@ fun BottomNavigationBar(
                     disabledIconColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
                     disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(0.5f),
                 ),
-                interactionSource = null,
+                interactionSource = NoRippleInteractionSource,
             )
-
-
         }
     }
 }

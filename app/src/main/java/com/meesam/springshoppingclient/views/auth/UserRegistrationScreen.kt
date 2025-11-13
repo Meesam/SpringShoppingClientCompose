@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -127,6 +128,25 @@ fun RegisterForm(
                 leadingIcon = Icons.Outlined.Email,
                 enabled = true,
                 keyBoardOption = KeyboardOptions(keyboardType=KeyboardType.Email)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                "Mobile number",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_bold))
+                ),
+                color = MaterialTheme.colorScheme.onSurface.copy(0.9f),
+                modifier = Modifier.padding(start = 8.dp)
+            )
+            Spacer(Modifier.height(5.dp))
+            InputTextField(
+                textFieldState = registrationViewModel.phone,
+                isError = registrationViewModel.phoneError != null,
+                errorMessage = registrationViewModel.phoneError.toString(),
+                placeholder = "Please enter your mobile number",
+                leadingIcon = Icons.Outlined.PhoneAndroid,
+                enabled = true,
+                keyBoardOption = KeyboardOptions(keyboardType=KeyboardType.Phone)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(

@@ -1,6 +1,13 @@
 package com.meesam.springshoppingclient.di
 
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,6 +16,8 @@ import javax.inject.Singleton
 import com.meesam.springshoppingclient.network.AuthApiService
 import com.meesam.springshoppingclient.network.CategoryApi
 import com.meesam.springshoppingclient.network.UserApi
+import com.meesam.springshoppingclient.pref.UserPreferences
+import com.meesam.springshoppingclient.pref.UserPreferencesImpl
 import com.meesam.springshoppingclient.repository.auth.UserAuthRepository
 import com.meesam.springshoppingclient.repository.auth.UserAuthRepositoryImpl
 import com.meesam.springshoppingclient.repository.category.CategoryRepository
@@ -16,6 +25,7 @@ import com.meesam.springshoppingclient.repository.category.CategoryRepositoryImp
 import com.meesam.springshoppingclient.repository.user.UserRepository
 import com.meesam.springshoppingclient.repository.user.UserRepositoryImpl
 import com.meesam.springshoppingclient.utils.Constants.BASE_URL
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -43,6 +53,25 @@ object AppModule {
         return OkHttpClient.Builder().addInterceptor(interceptor).authenticator(tokenAuthenticator)
             .build()
     }
+
+    @Singleton
+    @Provides
+    fun provideDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            corruptionHandler = ReplaceFileCorruptionHandler(
+                produceNewData = { emptyPreferences() }
+            ), produceFile = {
+                context.preferencesDataStoreFile("app_data")
+            }
+        )
+    }
+
+    @Provides
+    fun provideUserPref(dataStore: DataStore<Preferences>): UserPreferences =
+        UserPreferencesImpl(dataStore)
+
 
     @Provides
     @Singleton

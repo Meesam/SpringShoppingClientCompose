@@ -13,6 +13,10 @@ import com.google.gson.Gson
 import com.meesam.springshoppingclient.events.UserLoginEvents
 import com.meesam.springshoppingclient.model.AuthLoginRequest
 import com.meesam.springshoppingclient.model.ErrorResponse
+import com.meesam.springshoppingclient.pref.ACCESS_TOKEN_KEY
+import com.meesam.springshoppingclient.pref.REFRESH_TOKEN_KEY
+import com.meesam.springshoppingclient.pref.USER_DETAILS_KEY
+import com.meesam.springshoppingclient.pref.UserPreferences
 import com.meesam.springshoppingclient.repository.auth.UserAuthRepository
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.utils.Constants
@@ -34,7 +38,7 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val userAuthRepository: UserAuthRepository,
-    private val tokenManager: TokenManager
+    private val userPref: UserPreferences
 ) : ViewModel() {
 
     private val _loginUiState = MutableStateFlow<AppState<String>>(AppState.Idle)
@@ -131,23 +135,25 @@ class LoginViewModel @Inject constructor(
                 email = email.text.toString(),
                 password = password.text.toString()
             )
-            try{
+            try {
                 val result = userAuthRepository.login(request)
                 if (result.isSuccessful) {
                     result.body()?.let {
-                        tokenManager.saveToken(it.accessToken, Constants.ACCESS_TOKEN)
-                        tokenManager.saveToken(it.refreshToken, Constants.REFRESH_TOKEN)
+                        userPref.savePref(pref = it.accessToken, key = ACCESS_TOKEN_KEY)
+                        userPref.savePref(pref = it.refreshToken, key = REFRESH_TOKEN_KEY)
                         val userString = Gson().toJson(it.user)
-                        tokenManager.saveUserDetail(userString)
+                        userPref.savePref(key = USER_DETAILS_KEY, pref = userString)
                         _loginUiState.value = AppState.Success("Success")
                     }
                 } else {
                     val gson = Gson()
                     val err = result.errorBody()?.string()
                     val errorResponse = gson.fromJson(err, ErrorResponse::class.java)
-                    _loginUiState.value = AppState.Error(err?.isEmpty()?.let { if(!it) errorResponse.message else  "Something went wrong" })
+                    _loginUiState.value = AppState.Error(
+                        err?.isEmpty()
+                            ?.let { if (!it) errorResponse.message else "Something went wrong" })
                 }
-            }catch (ex: Exception){
+            } catch (ex: Exception) {
                 _loginUiState.value = AppState.Error("Something went wrong")
             }
 

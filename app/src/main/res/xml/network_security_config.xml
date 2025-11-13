@@ -3,6 +3,8 @@
     <domain-config cleartextTrafficPermitted="true">
         <!-- This is the IP address for the host computer's localhost in the Android Emulator -->
         <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">192.168.1.6</domain>
+        <domain includeSubdomains="true">192.168.1.10</domain>
         <!-- If you also use a custom local domain, add it here -->
         <!-- <domain includeSubdomains="true">your.local.domain.com</domain> -->
     </domain-config>

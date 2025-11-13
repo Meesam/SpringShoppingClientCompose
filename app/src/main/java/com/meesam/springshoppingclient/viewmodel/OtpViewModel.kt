@@ -9,25 +9,36 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meesam.springshoppingclient.events.OtpEvents
 import com.meesam.springshoppingclient.model.ActivateUserByOtpRequest
+import com.meesam.springshoppingclient.pref.TEMP_EMAIL_KEY
+import com.meesam.springshoppingclient.pref.UserPreferences
 import com.meesam.springshoppingclient.repository.auth.UserAuthRepository
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class OtpViewModel @Inject constructor(private val userAuthRepository: UserAuthRepository, private val tokenManager: TokenManager) :
+class OtpViewModel @Inject constructor(
+    private val userAuthRepository: UserAuthRepository,
+    private val tokenManager: TokenManager,
+    private val userPref: UserPreferences
+) :
     ViewModel() {
+
+    val tempEmailFromPreferences = userPref.getPref(key = TEMP_EMAIL_KEY).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = ""
+    )
 
     private var _otpState = MutableStateFlow<AppState<String>>(AppState.Idle)
     val otpState: StateFlow<AppState<String>> = _otpState.asStateFlow()
-
-    private var _tempEmail = MutableStateFlow<String>(tokenManager.getTempRegisteredEmail() as String)
-    val tempEmail: StateFlow<String?> = _tempEmail.asStateFlow()
 
     var otp by mutableStateOf("")
         private set
@@ -73,16 +84,16 @@ class OtpViewModel @Inject constructor(private val userAuthRepository: UserAuthR
         if (isOtpValid()) {
             viewModelScope.launch {
                 _otpState.value = AppState.Loading
-               val result = userAuthRepository.activateUserByOtp(
+                val result = userAuthRepository.activateUserByOtp(
                     ActivateUserByOtpRequest(
                         otp = otp.toInt(),
-                        email = tempEmail.value ?:""
+                        email = tempEmailFromPreferences.value
                     )
                 )
-                if(result.isSuccessful){
+                if (result.isSuccessful) {
                     tokenManager.clearPref()
                     _otpState.value = AppState.Success("Account activated successfully")
-                }else {
+                } else {
                     _otpState.value = AppState.Error("Something went wrong")
                 }
             }

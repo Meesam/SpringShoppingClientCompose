@@ -13,6 +13,8 @@ import com.google.gson.Gson
 import com.meesam.springshoppingclient.events.UserRegistrationEvents
 import com.meesam.springshoppingclient.model.AuthRegisterRequest
 import com.meesam.springshoppingclient.model.ErrorResponse
+import com.meesam.springshoppingclient.pref.TEMP_EMAIL_KEY
+import com.meesam.springshoppingclient.pref.UserPreferences
 import com.meesam.springshoppingclient.repository.auth.UserAuthRepository
 import com.meesam.springshoppingclient.states.AppState
 import com.meesam.springshoppingclient.utils.TokenManager
@@ -31,7 +33,10 @@ import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
-class RegistrationViewModel @Inject constructor(private val userAuthRepository: UserAuthRepository, private val tokenManager: TokenManager) :
+class RegistrationViewModel @Inject constructor(
+    private val userAuthRepository: UserAuthRepository,
+    private val userPref: UserPreferences
+) :
     ViewModel() {
 
     private var _registrationState = MutableStateFlow<AppState<String>>(AppState.Idle)
@@ -39,6 +44,7 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
 
     val name = TextFieldState()
     val email = TextFieldState()
+    val phone = TextFieldState()
     var password = TextFieldState()
 
     var confirmPassword = TextFieldState()
@@ -51,6 +57,8 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
     var passwordError by mutableStateOf<String?>(null)
 
     var confirmPasswordError by mutableStateOf<String?>(null)
+
+    var phoneError by mutableStateOf<String?>(null)
 
     init {
         // Observe changes to the name field's text
@@ -74,6 +82,13 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
             .debounce(300)
             .onEach {
                 isPasswordValid()
+            }.launchIn(viewModelScope)
+
+        snapshotFlow { phone.text }
+            .drop(1)
+            .debounce(300)
+            .onEach {
+                isPhoneValid()
             }.launchIn(viewModelScope)
 
         snapshotFlow { confirmPassword.text }
@@ -101,6 +116,7 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
             is UserRegistrationEvents.OnRegisterClick -> {
                 registerUser()
             }
+
             is UserRegistrationEvents.Reset -> {}
         }
     }
@@ -144,6 +160,19 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
         return true
     }
 
+    private fun isPhoneValid(): Boolean {
+        if(phone.text ==""){
+            phoneError = null
+            return true
+        }
+        if (phone.text.length != 10) {
+            phoneError = "Mobile number should be 10 digit"
+            return false
+        }
+        phoneError = null
+        return true
+    }
+
     private fun isConfirmPasswordValid(): Boolean {
         if (confirmPassword.text.toString() != password.text.toString()) {
             confirmPasswordError = "Password didn't match"
@@ -158,7 +187,7 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
     }
 
     private fun registerUser() {
-        if(isRegistrationFormValid()){
+        if (isRegistrationFormValid()) {
             viewModelScope.launch {
                 _registrationState.value = AppState.Loading
                 try {
@@ -170,19 +199,22 @@ class RegistrationViewModel @Inject constructor(private val userAuthRepository: 
                         )
                     )
                     if (result.isSuccessful) {
-                        tokenManager.saveTempRegisteredEmail(email.text.toString())
-                        _registrationState.value = AppState.Success("You've successfully registered")
+                        userPref.savePref(pref = email.text.toString(), key = TEMP_EMAIL_KEY)
+                        _registrationState.value =
+                            AppState.Success("You've successfully registered")
                     } else {
                         val gson = Gson()
                         val err = result.errorBody()?.string()
                         val errorResponse = gson.fromJson(err, ErrorResponse::class.java)
-                        _registrationState.value = AppState.Error(err?.isEmpty()?.let { if(!it) errorResponse.message else  "Something went wrong" })
+                        _registrationState.value = AppState.Error(
+                            err?.isEmpty()
+                                ?.let { if (!it) errorResponse.message else "Something went wrong" })
                     }
-                }catch (ex: Exception){
+                } catch (ex: Exception) {
                     _registrationState.value = AppState.Error(ex.message.toString())
                 }
             }
-        }else {
+        } else {
             return
         }
     }

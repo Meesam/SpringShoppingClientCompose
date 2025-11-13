@@ -4,20 +4,49 @@ import android.util.Log
 import com.google.gson.Gson
 import com.meesam.springshoppingclient.model.AuthRefreshTokenRequest
 import com.meesam.springshoppingclient.network.AuthApiService
+import com.meesam.springshoppingclient.pref.ACCESS_TOKEN_KEY
+import com.meesam.springshoppingclient.pref.REFRESH_TOKEN_KEY
+import com.meesam.springshoppingclient.pref.USER_DETAILS_KEY
+import com.meesam.springshoppingclient.pref.UserPreferences
 import com.meesam.springshoppingclient.utils.Constants
 import com.meesam.springshoppingclient.utils.TokenManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 class TokenAuthenticator @Inject constructor(
-    private val tokenManager: TokenManager,
-    // Inject your ApiService or a dedicated RefreshTokenService
+    private val userPreferences: UserPreferences,
     private val authApiService: AuthApiService
 ) : Authenticator {
+
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    val accessTokenFromPreferences = userPreferences.getPref(key = ACCESS_TOKEN_KEY)
+    val refreshTokenFromPreferences = userPreferences.getPref(key = REFRESH_TOKEN_KEY)
+    var accessToken: String = ""
+        private set
+    var refreshToken: String = ""
+        private set
+
+    init {
+        scope.launch {
+            accessTokenFromPreferences.collect { acToken->
+                accessToken = acToken
+            }
+        }
+        scope.launch {
+            refreshTokenFromPreferences.collect {rfToken->
+                refreshToken = rfToken
+            }
+        }
+    }
 
     override fun authenticate(route: Route?, response: Response): Request? {
         // 1. Check if the request already failed with a token refresh attempt
@@ -26,8 +55,6 @@ class TokenAuthenticator @Inject constructor(
             return null
         }
 
-        // 2. Get the current refresh token
-        val refreshToken = tokenManager.getToken(Constants.REFRESH_TOKEN) ?: return null
         val newTokens = runBlocking {
             try {
                 val request = AuthRefreshTokenRequest(
@@ -36,7 +63,7 @@ class TokenAuthenticator @Inject constructor(
                 authApiService.refreshToken(request)
             } catch (e: Exception) {
                 // Handle refresh token API call failure (e.g., log out user)
-                tokenManager.clearPref()
+                userPreferences.clear()
                 null
             }
         } ?: return null // Refresh token call failed or returned no tokens
@@ -44,11 +71,14 @@ class TokenAuthenticator @Inject constructor(
         // 4. Save the new tokens
         if(newTokens.isSuccessful && newTokens.body() != null){
             newTokens.body()?.let { newToken->
-                Log.d("Refresh Token Call",newToken.accessToken)
-                tokenManager.saveToken(newToken.accessToken, Constants.ACCESS_TOKEN)
-                tokenManager.saveToken(newToken.refreshToken, Constants.REFRESH_TOKEN)
-                val userDetailString = Gson().toJson(newToken.user)
-                tokenManager.saveUserDetail(userDetailString)
+                scope.launch {
+                    Log.d("Refresh Token Call",newToken.accessToken)
+                    userPreferences.savePref(pref = newToken.accessToken, key = ACCESS_TOKEN_KEY)
+                    userPreferences.savePref(pref = newToken.refreshToken, key = REFRESH_TOKEN_KEY)
+                    val userDetailString = Gson().toJson(newToken.user)
+                    userPreferences.savePref(key = USER_DETAILS_KEY, pref = userDetailString)
+                }
+
             }
         }
         // 5. Retry the original request with the new access token

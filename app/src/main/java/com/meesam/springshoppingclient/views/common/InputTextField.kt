@@ -1,6 +1,5 @@
 package com.meesam.springshoppingclient.views.common
 
-import android.R.attr.text
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -46,17 +45,14 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.text
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-//import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.views.theme.AppTheme
 import com.meesam.springshoppingclient.views.theme.inputBackGround
-import kotlin.text.format
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -301,7 +297,7 @@ fun InputDatePickerField(
             val date = Date(millis)
 
             // 2. Define the desired format: YYYY/MM/DD
-            val formatter = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+            val formatter = SimpleDateFormat("YYYY-MM-dd", Locale.getDefault())
 
             // 3. Format the Date object into a String
             val dateString = formatter.format(date)

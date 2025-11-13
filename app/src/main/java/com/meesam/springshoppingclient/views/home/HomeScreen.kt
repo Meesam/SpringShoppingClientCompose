@@ -39,6 +39,8 @@ import com.meesam.springshoppingclient.views.common.BottomNavigationBar
 import com.meesam.springshoppingclient.views.favorite.FavoriteScreen
 import com.meesam.springshoppingclient.views.feed.FeedScreen
 import com.meesam.springshoppingclient.views.products.ProductScreen
+import com.meesam.springshoppingclient.views.profile.EditProfileScreen
+import com.meesam.springshoppingclient.views.profile.NewAddressScreen
 import com.meesam.springshoppingclient.views.profile.ProfileScreen
 import com.meesam.springshoppingclient.views.theme.AppTheme
 
@@ -140,8 +142,8 @@ fun HomeScreen(
                 .nestedScroll(nestedScrollConnection)
         ) {
             when (currentBottomTabRoute) {
-                AppDestinations.PRODUCT_ROUTE -> ProductScreen() {
-                    mainNavController.navigate(AppDestinations.productDetailRoute(it))
+                AppDestinations.PRODUCT_ROUTE -> NewAddressScreen() {
+                    //mainNavController.navigate(AppDestinations.productDetailRoute(it))
                 }
 
                 AppDestinations.PROFILE_ROUTE -> ProfileScreen(
@@ -159,7 +161,7 @@ fun HomeScreen(
                     mainNavController.navigate(AppDestinations.productDetailRoute(it))
                 }
 
-                AppDestinations.FAVORITE_ROUTE -> FavoriteScreen()
+                AppDestinations.FAVORITE_ROUTE -> EditProfileScreen(modifier.padding(paddingValues),mainNavController)
                 AppDestinations.CART_ROUTE -> CartScreen()
             }
         }

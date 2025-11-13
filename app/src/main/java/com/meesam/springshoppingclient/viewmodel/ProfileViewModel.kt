@@ -5,17 +5,19 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.meesam.springshoppingclient.events.UserProfileEvent
 import com.meesam.springshoppingclient.model.UserResponse
-import com.meesam.springshoppingclient.repository.user.UserRepository
+import com.meesam.springshoppingclient.pref.ACCESS_TOKEN_KEY
+import com.meesam.springshoppingclient.pref.USER_DETAILS_KEY
+import com.meesam.springshoppingclient.pref.UserPreferences
 import com.meesam.springshoppingclient.states.AppState
-import com.meesam.springshoppingclient.utils.Constants
 import com.meesam.springshoppingclient.utils.TokenManager
-import com.meesam.springshoppingclient.views.profile.ProfileScreenOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,14 +28,13 @@ sealed class NavigationCommand {
 
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(private val tokenManager: TokenManager) :
+class ProfileViewModel @Inject constructor(
+    private val userPreferences: UserPreferences
+) :
     ViewModel() {
 
     private var _userProfile = MutableStateFlow<AppState<UserResponse?>>(AppState.Loading)
     val userProfile: StateFlow<AppState<UserResponse?>> = _userProfile.asStateFlow()
-
-    private val _navigationCommand = MutableSharedFlow<NavigationCommand>()
-    val navigationCommand = _navigationCommand.asSharedFlow()
 
     private var _isUserLoggedIn = MutableStateFlow<Boolean>(false)
     val isUserLoggedIn: StateFlow<Boolean> = _isUserLoggedIn.asStateFlow()
@@ -42,8 +43,17 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
     private val _isLoadingInitialUser = MutableStateFlow(true)
     val isLoadingInitialUser: StateFlow<Boolean> = _isLoadingInitialUser.asStateFlow()
 
-    private val _activeSheetContent = MutableStateFlow<ProfileScreenOptions?>(null)
-    val activeSheetContent = _activeSheetContent.asStateFlow()
+    val accessTokenFromPreferences = userPreferences.getPref(key = ACCESS_TOKEN_KEY).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = ""
+    )
+
+    val userDetailsFromPreferences = userPreferences.getPref(key = USER_DETAILS_KEY).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = ""
+    )
 
     init {
         checkIfTokenExist()
@@ -53,24 +63,25 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
     fun onEvent(event: UserProfileEvent) {
         when (event) {
             is UserProfileEvent.OnSignOut -> {
-                // userLogout()
+                userLogout()
             }
-
-            is UserProfileEvent.OnDismissSheet -> {
-                _activeSheetContent.value = null
-            }
-
-            is UserProfileEvent.OnOptionClick -> {
-                _activeSheetContent.value = event.option
-            }
-
         }
     }
 
     private fun checkIfTokenExist() {
         _isLoadingInitialUser.value = true
-        _isUserLoggedIn.value = tokenManager.getToken(Constants.ACCESS_TOKEN) != null
-        _isLoadingInitialUser.value = false
+        try {
+            viewModelScope.launch {
+                accessTokenFromPreferences.collect {
+                    _isUserLoggedIn.value = it.isNotEmpty()
+                }
+            }
+        } catch (_: Exception) {
+            _isUserLoggedIn.value = false
+        } finally {
+            _isLoadingInitialUser.value = false
+        }
+
     }
 
     fun getUserProfile() {
@@ -78,28 +89,32 @@ class ProfileViewModel @Inject constructor(private val tokenManager: TokenManage
         _userProfile.value = AppState.Loading
         viewModelScope.launch {
             try {
-                val userString = tokenManager.getUserDetails()
-                val user = Gson().fromJson(userString, UserResponse::class.java)
-                //val user = userRepository.getUserProfile(2)
-                if (user == null) {
-                    _userProfile.value = AppState.Error("Something went wrong")
-                } else {
-                    _userProfile.value = AppState.Success(user)
+                userDetailsFromPreferences.collect { userDetailsString ->
+                    if (userDetailsString.isNotEmpty()) {
+                        val user = Gson().fromJson(userDetailsString, UserResponse::class.java)
+                        user?.let {
+                            _userProfile.value = AppState.Success(user)
+                        } ?: {
+                            _userProfile.value = AppState.Error("Something went wrong")
+                        }
+                    } else {
+                        _userProfile.value = AppState.Loading
+                    }
+                    _isLoadingInitialUser.value = false
                 }
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
                 _userProfile.value = AppState.Error("Something went wrong")
+                _isLoadingInitialUser.value = false
             } finally {
                 _isLoadingInitialUser.value = false
             }
-
         }
     }
 
 
-    /*fun userLogout() {
+    fun userLogout() {
         viewModelScope.launch {
-            tokenManager.clearPref()
-            _userProfile.value = AppState.Success(null)
+            userPreferences.clear()
         }
-    }*/
+    }
 }

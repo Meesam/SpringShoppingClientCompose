@@ -95,7 +95,7 @@ fun OtpForm(
 ) {
     val isLoading = otpState is AppState.Loading
     val isSuccess = otpState is AppState.Success
-    val tempEmail by otpViewModel.tempEmail.collectAsState()
+    val tempEmail by otpViewModel.tempEmailFromPreferences.collectAsState()
     val sheetState = rememberModalBottomSheetState()
 
     Column(

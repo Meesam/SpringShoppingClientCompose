@@ -7,5 +7,6 @@ data class UserResponse(
     val lastLoginAt: String = "",
     val name: String = "",
     val profilePicUrl: String? = null,
-    val role: String = ""
+    val role: String = "",
+    val phone: String? = null
 )

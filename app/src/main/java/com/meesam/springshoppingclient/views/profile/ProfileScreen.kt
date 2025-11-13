@@ -110,8 +110,6 @@ fun ProfileScreen(
     val currentRoute = backStackEntry?.destination?.route
 
     Scaffold(
-        // Optional: You might want a TopBar specific to the Profile section
-
         topBar = {
             if (currentRoute != ProfileSubDestinations.PROFILE_DETAILS) {
                 MyTopAppBar(profileNavController, currentRoute)
@@ -122,7 +120,7 @@ fun ProfileScreen(
         NavHost(
             navController = profileNavController,
             startDestination = ProfileSubDestinations.PROFILE_DETAILS,
-            //modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues)
         ) {
             composable(ProfileSubDestinations.PROFILE_DETAILS) {
                 when (val result = userProfile) {
@@ -164,7 +162,7 @@ fun ProfileScreen(
                 }
             }
             composable(ProfileSubDestinations.EDIT_PROFILE) {
-                EditProfileScreen(modifier = Modifier.padding(paddingValues))
+                EditProfileScreen(mainNavController = mainNavController)
             }
             composable(ProfileSubDestinations.CHANGE_PASSWORD) {
                 ChangePasswordScreen()
@@ -174,6 +172,9 @@ fun ProfileScreen(
             }
             composable(ProfileSubDestinations.PAYMENT_SETTINGS) {
                 PaymentSettingScreen()
+            }
+            composable(ProfileSubDestinations.ADDRESSES_ROUTE) {
+                AddressScreen(mainNavController = mainNavController)
             }
         }
     }
@@ -246,8 +247,9 @@ fun ProfileUi(
 
     LazyColumn(
         modifier = Modifier
+
             .fillMaxSize()
-            .padding(vertical = 54.dp),
+            .padding(vertical = 16.dp),
         contentPadding = PaddingValues(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -371,7 +373,7 @@ fun ProfileUi(
         }
 
         item {
-            AddressBlock()
+            AddressBlock(profileNavController = profileNavController)
         }
 
         item {
@@ -528,7 +530,7 @@ fun PaymentBlock(modifier: Modifier = Modifier, profileNavController: NavHostCon
 }
 
 @Composable
-fun AddressBlock(modifier: Modifier = Modifier) {
+fun AddressBlock(modifier: Modifier = Modifier,profileNavController: NavHostController) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -545,7 +547,7 @@ fun AddressBlock(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(indication = null, interactionSource = null) {
-                    // profileViewModel.onEvent(UserProfileEvent.OnOptionClick(it))
+                    profileNavController.navigate(ProfileSubDestinations.ADDRESSES_ROUTE)
                 },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -582,6 +584,7 @@ fun MyTopAppBar(navController: NavHostController, currentRoute: String?) {
         ProfileSubDestinations.EDIT_PROFILE -> "Edit Profile"
         ProfileSubDestinations.PAYMENT_SETTINGS -> "Payment Settings"
         ProfileSubDestinations.NOTIFICATION_SETTINGS -> "Notifications Settings"
+        ProfileSubDestinations.ADDRESSES_ROUTE -> "Address Settings"
         else -> ""
     }
 

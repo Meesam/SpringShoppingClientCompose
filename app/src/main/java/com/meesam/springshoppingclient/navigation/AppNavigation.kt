@@ -10,6 +10,10 @@ object AppDestinations {
     const val REGISTER_ROUTE = "register"
     const val HOME_ROUTE = "home"
 
+    const val CAMERA_SCREEN_ROUTE = "camera"
+
+    const val ADDRESS_SCREEN_ROUTE ="address"
+
     const val SEARCH_SUGGESTION_ROUTE ="search_suggestion"
 
     const val ONBOARDING_ROUTE ="on_boarding"
@@ -50,4 +54,6 @@ object ProfileSubDestinations{
     const val CHANGE_PASSWORD = "profile/changePassword"
     const val PAYMENT_SETTINGS = "profile/paymentSetting"
     const val NOTIFICATION_SETTINGS = "profile/notificationSetting"
+
+    const val ADDRESSES_ROUTE = "profile/addressSetting"
 }

@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.protolite.well.known.types)
+    implementation(libs.litert)
+    implementation(libs.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,9 +89,30 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.icons.extended)
 
-    //implementation(libs.androidx.compose.ui.text.google.fonts.v193)
+
     implementation(libs.androidx.compose.ui.text.google.fonts.v166)
 
-    //implementation(libs.androidx.compose.foundation.text2)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.extensions)
+    implementation(libs.accompanist.permissions)
+    implementation(libs.kotlinx.datetime)
+    implementation(libs.androidx.datastore.preferences)
+    // Maps Compose library
+    implementation("com.google.maps.android:maps-compose:6.12.1")
+
+    // Optional: Utilities for clustering, etc.
+    implementation("com.google.maps.android:maps-compose-utils:6.12.1")
+
+    // Optional: Widgets like ScaleBar
+    implementation("com.google.maps.android:maps-compose-widgets:6.12.1")
+
+    // Fused Location Provider Client, Geofencing, etc.
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    implementation("com.valentinilk.shimmer:compose-shimmer:1.2.0")
+
 
 }

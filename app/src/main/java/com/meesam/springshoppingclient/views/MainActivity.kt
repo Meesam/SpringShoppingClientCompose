@@ -34,10 +34,13 @@ import com.meesam.springshoppingclient.views.theme.AppTheme
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.meesam.springshoppingclient.events.UserProfileEvent
 import com.meesam.springshoppingclient.views.payment.PaymentSettingScreen
 import com.meesam.springshoppingclient.views.products.ProductDetailScreen
 import com.meesam.springshoppingclient.views.products.ProductScreen
+import com.meesam.springshoppingclient.views.profile.CameraScreen
 import com.meesam.springshoppingclient.views.profile.EditProfileScreen
+import com.meesam.springshoppingclient.views.profile.NewAddressScreen
 import com.meesam.springshoppingclient.views.search.SearchSuggestionScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -134,7 +137,7 @@ fun AppNavigation() {
                     mainNavController = mainNavController,
                     isAdminLoggedIn = false,
                     onSignOut = {
-                        //profileViewModel.onEvent(UserProfileEvent.onSignOut)
+                        profileViewModel.onEvent(UserProfileEvent.OnSignOut)
                         mainNavController.navigate(AppDestinations.LOGIN_ROUTE) {
                             popUpTo(AppDestinations.HOME_ROUTE) { inclusive = true }
                             launchSingleTop = true
@@ -159,13 +162,16 @@ fun AppNavigation() {
                 )
             }*/
 
-            /*composable(AppDestinations.ADD_NEW_CARD_ROUTE) {
-                AddNewCard(
-                    onBack = { mainNavController.popBackStack() }
-                )
-            }*/
-
-
+            composable(AppDestinations.CAMERA_SCREEN_ROUTE) {
+                CameraScreen{
+                   mainNavController.popBackStack()
+                }
+            }
+            composable(AppDestinations.ADDRESS_SCREEN_ROUTE) {
+                NewAddressScreen(){
+                    mainNavController.popBackStack()
+                }
+            }
             composable(AppDestinations.PRODUCT_ROUTE) {
                 ProductScreen(
                     onProductClick = {userId ->

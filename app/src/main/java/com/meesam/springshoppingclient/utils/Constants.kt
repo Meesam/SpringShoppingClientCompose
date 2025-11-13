@@ -2,7 +2,8 @@ package com.meesam.springshoppingclient.utils
 
 object Constants {
     const val TAG = "SPRING_SHOPPING"
-    const val BASE_URL = "http://10.0.2.2:8080/api/v1/"
+    //const val BASE_URL = "http://10.0.2.2:8080/api/v1/"
+    const val BASE_URL = "http://192.168.1.10:8080/api/v1/"
     const val ACCESS_TOKEN = "access_token"
     const val REFRESH_TOKEN = "refresh_token"
 
