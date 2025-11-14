@@ -40,6 +40,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
@@ -54,21 +56,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.events.ProductEvent
 import com.meesam.springshoppingclient.model.Product
+import com.meesam.springshoppingclient.model.ProductResponse
 import com.meesam.springshoppingclient.states.AppState
-
 
 
 import com.meesam.springshoppingclient.viewmodel.ProductsViewModel
 import com.meesam.springshoppingclient.views.theme.AppTheme
 
 @Composable
-fun ProductDetailScreen(productId: String, onGoBack: () -> Unit) {
+fun ProductDetailScreen(productId: Long, onGoBack: () -> Unit) {
     val productsViewModel: ProductsViewModel = hiltViewModel()
     val productDetail by productsViewModel.productDetail.collectAsState()
     val productCounter by productsViewModel._productCounter.collectAsState()
 
     LaunchedEffect(productId) {
-        if (productId != "") {
+        if (productId != 0.toLong()) {
             productsViewModel.onEvent(ProductEvent.LoadProductById(productId))
         }
     }
@@ -120,83 +122,112 @@ fun ProductDetailScreen(productId: String, onGoBack: () -> Unit) {
 @Composable
 fun ProductDetail(
     modifier: Modifier = Modifier,
-    productDetail: Product?,
+    productDetail: ProductResponse?,
     productCounter: Int,
     onDecreaseCount: () -> Unit,
     onIncreaseCount: () -> Unit,
     onClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 50.dp)
-            .verticalScroll(scrollState)
-    ) {
-        Box {
-            Image(
-                painter = painterResource(id = R.drawable.onboarding_image),
-                contentDescription = "Logo",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Transparent)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 50.dp)
+                .verticalScroll(scrollState)
+        ) {
+            Box {
+                Image(
+                    painter = painterResource(id = R.drawable.onboarding_image),
+                    contentDescription = "Logo",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Transparent)
+                )
+                Box(
+                    contentAlignment = Alignment.Center, modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = 40.dp, start = 20.dp)
+                        .background(
+                            brush = SolidColor(
+                                value = Color.LightGray
+                            ), shape = CircleShape, alpha = 0.2f
+                        )
+                        .size(40.dp)
+                        .clickable { onClick() }
+
+                ) {
+                    Icon(
+                        Icons.Default.ChevronLeft,
+                        contentDescription = "Favorite",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .size(25.dp)
+                            .graphicsLayer {
+                                alpha = 2f
+                            }
+                    )
+                }
+                Box(
+                    contentAlignment = Alignment.Center, modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 40.dp, end = 20.dp)
+                        .background(
+                            brush = SolidColor(
+                                value = Color.LightGray
+                            ), shape = CircleShape, alpha = 0.2f
+                        )
+                        .size(40.dp)
+
+                ) {
+                    Icon(
+                        Icons.Default.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .graphicsLayer {
+                                alpha = 2f
+                            }
+                    )
+                }
+            }
+            ProductProperties(
+                productCounter = productCounter,
+                onDecreaseCount = onDecreaseCount,
+                onIncreaseCount = onIncreaseCount,
+                productDetail = productDetail
             )
-            Box(
-                contentAlignment = Alignment.Center, modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(top = 40.dp, start = 20.dp)
-                    .background(
-                        brush = SolidColor(
-                            value = Color.LightGray
-                        ), shape = CircleShape, alpha = 0.2f
-                    )
-                    .size(40.dp)
-                    .clickable { onClick() }
-
-            ) {
-                Icon(
-                    Icons.Default.ChevronLeft,
-                    contentDescription = "Favorite",
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .size(25.dp)
-                        .graphicsLayer {
-                            alpha = 2f
-                        }
-                )
-            }
-            Box(
-                contentAlignment = Alignment.Center, modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 40.dp, end = 20.dp)
-                    .background(
-                        brush = SolidColor(
-                            value = Color.LightGray
-                        ), shape = CircleShape, alpha = 0.2f
-                    )
-                    .size(40.dp)
-
-            ) {
-                Icon(
-                    Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorite",
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .graphicsLayer {
-                            alpha = 2f
-                        }
-                )
-            }
+            ProductProperties(
+                productCounter = productCounter,
+                onDecreaseCount = onDecreaseCount,
+                onIncreaseCount = onIncreaseCount,
+                productDetail = productDetail
+            )
+            ProductProperties(
+                productCounter = productCounter,
+                onDecreaseCount = onDecreaseCount,
+                onIncreaseCount = onIncreaseCount,
+                productDetail = productDetail
+            )
+            ProductProperties(
+                productCounter = productCounter,
+                onDecreaseCount = onDecreaseCount,
+                onIncreaseCount = onIncreaseCount,
+                productDetail = productDetail
+            )
+            ProductProperties(
+                productCounter = productCounter,
+                onDecreaseCount = onDecreaseCount,
+                onIncreaseCount = onIncreaseCount,
+                productDetail = productDetail
+            )
         }
-        ProductProperties(
-            productCounter = productCounter,
-            onDecreaseCount = onDecreaseCount,
-            onIncreaseCount = onIncreaseCount,
-            productDetail= productDetail
-        )
+
+        ProductBuyBlock(modifier = Modifier.align(Alignment.BottomCenter))
     }
+
 }
 
 @Composable
@@ -205,7 +236,7 @@ fun ProductProperties(
     productCounter: Int,
     onIncreaseCount: () -> Unit,
     onDecreaseCount: () -> Unit,
-    productDetail: Product?
+    productDetail: ProductResponse?
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -227,7 +258,7 @@ fun ProductProperties(
 
                 Row {
                     Text(
-                        "$"+productDetail?.price.toString(), style = TextStyle(
+                        "$" + productDetail?.price.toString(), style = TextStyle(
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp,
                             color = MaterialTheme.colorScheme.primary
@@ -329,19 +360,6 @@ fun ProductProperties(
             Spacer(Modifier.height(10.dp))
             Text(productDetail?.description.toString())
         }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
-                Text("Add To Cart")
-            }
-            Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
-                Text("Buy")
-            }
-        }
     }
 }
 
@@ -421,5 +439,33 @@ fun ProductDetailPreview() {
     AppTheme {
         //ProductCounter()
     }
+}
 
+@Composable
+fun ProductBuyBlock(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLowest)
+            .drawBehind {
+                drawLine(
+                    color = Color(0xFFB7BDCC),
+                    start = Offset(x = 0f, y = -10f),
+                    end = Offset(x = size.width, -10f),
+                    strokeWidth = 1f
+                )
+            }
+            .padding(bottom = 50.dp, start = 16.dp, end = 16.dp, top = 16.dp)
+
+    ) {
+        Button(onClick = {}, modifier = Modifier.weight(1f)) {
+            Text("Add to Cart")
+        }
+
+        Spacer(Modifier.width(16.dp))
+
+        Button(onClick = {},modifier = Modifier.weight(1f)) {
+            Text("Buy")
+        }
+    }
 }

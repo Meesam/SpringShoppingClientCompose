@@ -142,8 +142,8 @@ fun HomeScreen(
                 .nestedScroll(nestedScrollConnection)
         ) {
             when (currentBottomTabRoute) {
-                AppDestinations.PRODUCT_ROUTE -> NewAddressScreen() {
-                    //mainNavController.navigate(AppDestinations.productDetailRoute(it))
+                AppDestinations.PRODUCT_ROUTE -> ProductScreen {
+
                 }
 
                 AppDestinations.PROFILE_ROUTE -> ProfileScreen(

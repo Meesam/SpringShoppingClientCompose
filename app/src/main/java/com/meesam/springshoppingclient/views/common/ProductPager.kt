@@ -72,7 +72,6 @@ fun ProductPager(modifier: Modifier = Modifier) {
         Box(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
                 .height(200.dp)
                 .clip(RoundedCornerShape(20.dp)),
             contentAlignment = Alignment.Center

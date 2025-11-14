@@ -3,6 +3,7 @@ import androidx.compose.ui.graphics.Color
 
 
 val inputBackGround = Color(0XFFFBFBFD)
+val cardBackGround = Color(0xFFECECEE)
 val success = Color(0XFF00D261)
 val subHeading = Color(0xFFB7BDCC)
 val primaryLight = Color(0xFF39349E)

@@ -80,6 +80,11 @@ class TokenAuthenticator @Inject constructor(
                 }
 
             }
+        }else {
+            runBlocking {
+                userPreferences.clear()
+                null
+            }
         }
         // 5. Retry the original request with the new access token
         return response.request.newBuilder()

@@ -140,7 +140,6 @@ class AddressViewModel @Inject constructor(
                 if (userDetailsString.isNotEmpty()) {
                     val user = Gson().fromJson(userDetailsString, UserResponse::class.java)
                     user?.let { userDetails ->
-                        delay(200)
                         val result =
                             userRepository.getUserAddresses(userId = userDetails.id.toLong())
                         if (result.isSuccessful) {

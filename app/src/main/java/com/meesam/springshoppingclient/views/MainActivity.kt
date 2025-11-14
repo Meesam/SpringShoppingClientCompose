@@ -183,11 +183,11 @@ fun AppNavigation() {
                  route = AppDestinations.PRODUCT_DETAIL_ROUTE_PATTERN,
                  arguments = listOf(
                      navArgument(AppDestinations.PRODUCT_ID_KEY) {
-                         type = NavType.StringType
+                         type = NavType.LongType
                      }
                  )
              ) {backStackEntry ->
-                 val productId = backStackEntry.arguments?.getString(AppDestinations.PRODUCT_ID_KEY)
+                 val productId = backStackEntry.arguments?.getLong(AppDestinations.PRODUCT_ID_KEY)
                  productId?.let {id->
                      ProductDetailScreen(
                          productId = id,

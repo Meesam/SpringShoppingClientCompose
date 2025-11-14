@@ -15,6 +15,7 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import com.meesam.springshoppingclient.network.AuthApiService
 import com.meesam.springshoppingclient.network.CategoryApi
+import com.meesam.springshoppingclient.network.ProductApi
 import com.meesam.springshoppingclient.network.UserApi
 import com.meesam.springshoppingclient.pref.UserPreferences
 import com.meesam.springshoppingclient.pref.UserPreferencesImpl
@@ -22,6 +23,8 @@ import com.meesam.springshoppingclient.repository.auth.UserAuthRepository
 import com.meesam.springshoppingclient.repository.auth.UserAuthRepositoryImpl
 import com.meesam.springshoppingclient.repository.category.CategoryRepository
 import com.meesam.springshoppingclient.repository.category.CategoryRepositoryImpl
+import com.meesam.springshoppingclient.repository.product.ProductRepository
+import com.meesam.springshoppingclient.repository.product.ProductRepositoryImpl
 import com.meesam.springshoppingclient.repository.user.UserRepository
 import com.meesam.springshoppingclient.repository.user.UserRepositoryImpl
 import com.meesam.springshoppingclient.utils.Constants.BASE_URL
@@ -98,6 +101,18 @@ object AppModule {
     @Singleton
     fun getUserApiServices(retrofitBuilder: Retrofit.Builder, okHttpClient: OkHttpClient): UserApi {
         return retrofitBuilder.client(okHttpClient).build().create(UserApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun getProductApiServices(retrofitBuilder: Retrofit.Builder, okHttpClient: OkHttpClient): ProductApi {
+        return retrofitBuilder.client(okHttpClient).build().create(ProductApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductRepository(productApi: ProductApi): ProductRepository {
+        return ProductRepositoryImpl(productApi)
     }
 
     @Provides

@@ -48,7 +48,7 @@ import com.meesam.springshoppingclient.viewmodel.ProductsViewModel
 @Composable
 fun ProductScreen(onProductClick: (String) -> Unit) {
     val productsViewModel: ProductsViewModel = hiltViewModel()
-    val products by productsViewModel._products.collectAsState()
+    val products by productsViewModel.productsState.collectAsState()
 
     when (val result = products) {
         is AppState.Error -> {
@@ -93,7 +93,7 @@ fun ProductScreen(onProductClick: (String) -> Unit) {
                     ) {
                         items(result.data) { product ->
                             ProductItem(modifier = Modifier.padding(end = 10.dp, bottom = 10.dp), item = product) {
-                                onProductClick(product?.id ?: "")
+                                //onProductClick(product?.id ?: "")
                             }
                         }
                     }
