@@ -9,6 +9,7 @@ import com.meesam.springshoppingclient.model.UserUpdateRequest
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -38,4 +39,7 @@ interface UserApi {
 
     @POST("user/togglePrimaryAddress")
     suspend fun  togglePrimaryAddress(@Body togglePrimaryAddressRequest: TogglePrimaryAddressRequest): Response<Void>
+
+    @DELETE("user/deleteAddress")
+    suspend fun  deleteAddress(@Query("addressId") addressId: Long): Response<Void>
 }

@@ -80,4 +80,8 @@ class UserRepositoryImpl @Inject constructor(private val userApi: UserApi): User
         return userApi.togglePrimaryAddress(togglePrimaryAddressRequest = togglePrimaryAddressRequest)
     }
 
+    override suspend fun deleteAddress(addressId: Long): Response<Void> {
+        return userApi.deleteAddress(addressId)
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.meesam.springshoppingclient.viewmodel
 
+
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apartment
@@ -27,6 +28,7 @@ import com.meesam.springshoppingclient.states.AppState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -67,6 +69,10 @@ class AddressViewModel @Inject constructor(
 
     private var _selectedAddressType = MutableStateFlow("Home")
     val selectedAddressType: StateFlow<String> = _selectedAddressType.asStateFlow()
+
+    private var _deleteAddressState = MutableStateFlow<AppState<String>>(AppState.Idle)
+    val deleteAddressState: StateFlow<AppState<String>> = _deleteAddressState.asStateFlow()
+
     val street = TextFieldState()
     val zipCode = TextFieldState()
     val contactPerson = TextFieldState()
@@ -246,6 +252,31 @@ class AddressViewModel @Inject constructor(
             is AddressEvents.LoadUserAddressList -> {
                 getUserAddress()
             }
+
+            is AddressEvents.OnDeleteAddressClick -> {
+                deleteUserAddress(events.addressId)
+            }
+
+            is AddressEvents.OnResetState -> {
+                resetState()
+            }
+        }
+    }
+
+    private fun deleteUserAddress(addressId: Long) {
+        viewModelScope.launch {
+            _deleteAddressState.value = AppState.Loading
+            try {
+                val result = userRepository.deleteAddress(addressId)
+                if (result.isSuccessful) {
+                    _deleteAddressState.value = AppState.Success("Address deleted successfully")
+                } else {
+                    _deleteAddressState.value =
+                        AppState.Error("Something went wrong while deleting address")
+                }
+            } catch (ex: Exception) {
+                _deleteAddressState.value = AppState.Error(ex.message.toString())
+            }
         }
     }
 
@@ -362,6 +393,12 @@ class AddressViewModel @Inject constructor(
                 }
             }
         } else return
+    }
+
+    private fun resetState(){
+        _deleteAddressState.value = AppState.Idle
+        _togglePrimaryAddressState.value = AppState.Idle
+        _addAddressState.value = AppState.Idle
     }
 
 

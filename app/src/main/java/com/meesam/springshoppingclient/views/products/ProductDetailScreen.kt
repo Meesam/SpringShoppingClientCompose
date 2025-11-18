@@ -1,13 +1,20 @@
 package com.meesam.springshoppingclient.views.products
 
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,21 +23,30 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,8 +54,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -48,6 +66,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,20 +78,27 @@ import com.meesam.springshoppingclient.events.ProductEvent
 import com.meesam.springshoppingclient.model.Product
 import com.meesam.springshoppingclient.model.ProductResponse
 import com.meesam.springshoppingclient.states.AppState
+import com.meesam.springshoppingclient.viewmodel.ProductDetailViewModel
 
 
 import com.meesam.springshoppingclient.viewmodel.ProductsViewModel
+import com.meesam.springshoppingclient.views.common.RatingBlock
 import com.meesam.springshoppingclient.views.theme.AppTheme
+import com.meesam.springshoppingclient.views.theme.cardBackGround
+import com.meesam.springshoppingclient.views.theme.inputBackGround
+import com.meesam.springshoppingclient.views.theme.subHeading
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProductDetailScreen(productId: Long, onGoBack: () -> Unit) {
-    val productsViewModel: ProductsViewModel = hiltViewModel()
-    val productDetail by productsViewModel.productDetail.collectAsState()
-    val productCounter by productsViewModel._productCounter.collectAsState()
+    val productsDetailViewModel: ProductDetailViewModel = hiltViewModel()
+    val productDetail by productsDetailViewModel.productDetail.collectAsState()
+    val productCounter by productsDetailViewModel.productCounter.collectAsState()
 
     LaunchedEffect(productId) {
         if (productId != 0.toLong()) {
-            productsViewModel.onEvent(ProductEvent.LoadProductById(productId))
+            productsDetailViewModel.onEvent(ProductEvent.LoadProductById(productId))
         }
     }
 
@@ -100,17 +127,6 @@ fun ProductDetailScreen(productId: Long, onGoBack: () -> Unit) {
         is AppState.Success -> {
             ProductDetail(
                 productDetail = result.data,
-                productCounter = productCounter,
-                onIncreaseCount = {
-                    productsViewModel.onEvent(
-                        ProductEvent.ProductCountIncrement
-                    )
-                },
-                onDecreaseCount = {
-                    productsViewModel.onEvent(
-                        ProductEvent.ProductCountDecrement
-                    )
-                },
             ) {
                 onGoBack()
             }
@@ -123,111 +139,64 @@ fun ProductDetailScreen(productId: Long, onGoBack: () -> Unit) {
 fun ProductDetail(
     modifier: Modifier = Modifier,
     productDetail: ProductResponse?,
-    productCounter: Int,
-    onDecreaseCount: () -> Unit,
-    onIncreaseCount: () -> Unit,
     onClick: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
+    val colors = listOf(0XFF000000, 0xFFF10C0C, 0xFF0C4DF1)
+    val variants = listOf("64GB", "124GB", "256GB")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+    ) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 50.dp)
-                .verticalScroll(scrollState)
+                .fillMaxWidth()
+                .background(color = MaterialTheme.colorScheme.surfaceContainerLowest)
+                .drawBehind {
+                    drawLine(
+                        color = Color(0xFFB7BDCC),
+                        start = Offset(x = 0f, y = size.height),
+                        end = Offset(x = size.width, size.height),
+                        strokeWidth = 2.5f
+                    )
+                }
+                .padding(top = 50.dp, start = 8.dp)
         ) {
-            Box {
-                Image(
-                    painter = painterResource(id = R.drawable.onboarding_image),
-                    contentDescription = "Logo",
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.Transparent)
-                )
-                Box(
-                    contentAlignment = Alignment.Center, modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(top = 40.dp, start = 20.dp)
-                        .background(
-                            brush = SolidColor(
-                                value = Color.LightGray
-                            ), shape = CircleShape, alpha = 0.2f
-                        )
-                        .size(40.dp)
-                        .clickable { onClick() }
-
-                ) {
-                    Icon(
-                        Icons.Default.ChevronLeft,
-                        contentDescription = "Favorite",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier
-                            .size(25.dp)
-                            .graphicsLayer {
-                                alpha = 2f
-                            }
-                    )
-                }
-                Box(
-                    contentAlignment = Alignment.Center, modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 40.dp, end = 20.dp)
-                        .background(
-                            brush = SolidColor(
-                                value = Color.LightGray
-                            ), shape = CircleShape, alpha = 0.2f
-                        )
-                        .size(40.dp)
-
-                ) {
-                    Icon(
-                        Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorite",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .graphicsLayer {
-                                alpha = 2f
-                            }
-                    )
-                }
+            IconButton(onClick = {
+                onClick()
+            }, shape = CircleShape, interactionSource = null) {
+                Icon(Icons.Default.ArrowBack, contentDescription = null)
             }
-            ProductProperties(
-                productCounter = productCounter,
-                onDecreaseCount = onDecreaseCount,
-                onIncreaseCount = onIncreaseCount,
-                productDetail = productDetail
-            )
-            ProductProperties(
-                productCounter = productCounter,
-                onDecreaseCount = onDecreaseCount,
-                onIncreaseCount = onIncreaseCount,
-                productDetail = productDetail
-            )
-            ProductProperties(
-                productCounter = productCounter,
-                onDecreaseCount = onDecreaseCount,
-                onIncreaseCount = onIncreaseCount,
-                productDetail = productDetail
-            )
-            ProductProperties(
-                productCounter = productCounter,
-                onDecreaseCount = onDecreaseCount,
-                onIncreaseCount = onIncreaseCount,
-                productDetail = productDetail
-            )
-            ProductProperties(
-                productCounter = productCounter,
-                onDecreaseCount = onDecreaseCount,
-                onIncreaseCount = onIncreaseCount,
-                productDetail = productDetail
-            )
+        }
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            item {
+                ProductImageBlock()
+            }
+            item { ProductTitleAndPriceBlock(modifier = modifier.padding(horizontal = 16.dp), productDetail = productDetail) }
+            item { ProductColorBlock(modifier = modifier.padding(horizontal = 16.dp), productColors = colors) }
+            item { ProductVariantBlock(modifier = modifier.padding(horizontal = 16.dp),productVariant = variants) }
+            item { ProductDeliveryDetailBlock(modifier = modifier.padding(horizontal = 16.dp)) }
+            item {
+                ProductHighLights()
+            }
+            item {
+                ProductHighLights()
+            }
+            item {
+                ProductHighLights()
+            }
+            item {
+                ProductHighLights()
+            }
         }
 
-        ProductBuyBlock(modifier = Modifier.align(Alignment.BottomCenter))
-    }
+        ProductBuyBlock()
 
+    }
 }
 
 @Composable
@@ -238,128 +207,52 @@ fun ProductProperties(
     onDecreaseCount: () -> Unit,
     productDetail: ProductResponse?
 ) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    productDetail?.title.toString(), style = TextStyle(
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+
+    Column(modifier = modifier
+        .fillMaxWidth()
+        .padding(16.dp)) {
+
+    }
+}
+
+@Composable
+fun ProductTitleAndPriceBlock(modifier: Modifier = Modifier, productDetail: ProductResponse?) {
+    productDetail?.let { product ->
+        Column(modifier.fillMaxWidth()) {
+            Text(
+                product.title, style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_semibold))
                 )
-                Spacer(Modifier.height(12.dp))
-
-                Row {
-                    Text(
-                        "$" + productDetail?.price.toString(), style = TextStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Star, contentDescription = "Review", tint = Color.Yellow)
-                    Spacer(Modifier.width(10.dp))
-                    Text("4.8", style = TextStyle(fontWeight = FontWeight.Bold))
-                    Spacer(Modifier.width(3.dp))
-                    Text(
-                        "(320 Review)",
-                        style = TextStyle(
-                            fontWeight = FontWeight.Normal,
-                            color = Color.LightGray,
-                            fontSize = 14.sp
-                        )
-                    )
-                }
-            }
-            Column {
-                ProductCounter(
-                    productCounter = productCounter,
-                    onIncreaseCount = onIncreaseCount,
-                    onDecreaseCount = onDecreaseCount
+            )
+            Text(
+                product.description, style = MaterialTheme.typography.titleSmall.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_regular)),
+                    color = subHeading
                 )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    "Available in stock",
-                    style = TextStyle(fontWeight = FontWeight.SemiBold),
-                    fontSize = 14.sp
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "$" + product.price.toString(), style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = FontFamily(Font(R.font.nunito_bold)),
                 )
-            }
+            )
         }
+    }
+}
 
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text("Colors", style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold))
-            Spacer(Modifier.height(10.dp))
-            Row {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color.Red, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Check,
-                        contentDescription = "Check",
-                        tint = MaterialTheme.colorScheme.secondary
-                    )
-                }
-                Spacer(Modifier.width(15.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color.Black, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                }
-                Spacer(Modifier.width(15.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                }
-                Spacer(Modifier.width(15.dp))
-
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color.Green, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                }
-            }
-        }
-
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text("Description", style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold))
-            Spacer(Modifier.height(10.dp))
-            Text(productDetail?.description.toString())
-        }
+@Preview(showBackground = true)
+@Composable
+fun ProductTitleAndPriceBlockPrev() {
+    val data = ProductResponse(
+        title = "IPhone 16 Pro max",
+        description = "This is Iphone",
+        price = 12.55,
+        categoryName = "Mobile",
+        quantity = 32,
+        isActive = true
+    )
+    AppTheme {
+        ProductTitleAndPriceBlock(productDetail = data)
     }
 }
 
@@ -436,8 +329,21 @@ fun ProductCounter(
 @Preview(showBackground = true)
 @Composable
 fun ProductDetailPreview() {
+    val data = ProductResponse(
+        title = "IPhone 16 Pro max",
+        description = "This is Iphone",
+        price = 12.55,
+        categoryName = "Mobile",
+        quantity = 32,
+        isActive = true
+    )
     AppTheme {
-        //ProductCounter()
+        ProductProperties(
+            productCounter = 1,
+            onIncreaseCount = {},
+            onDecreaseCount = {},
+            productDetail = data
+        )
     }
 }
 
@@ -464,8 +370,147 @@ fun ProductBuyBlock(modifier: Modifier = Modifier) {
 
         Spacer(Modifier.width(16.dp))
 
-        Button(onClick = {},modifier = Modifier.weight(1f)) {
+        Button(onClick = {}, modifier = Modifier.weight(1f)) {
             Text("Buy")
         }
+    }
+}
+
+@Composable
+fun ProductImageBlock(modifier: Modifier = Modifier) {
+    val images = listOf(
+        R.drawable.pager_image_1,
+        R.drawable.pager_image_2,
+        R.drawable.pager_image_3,
+        R.drawable.pager_image_4
+    )
+    val pagerState = rememberPagerState(pageCount = {
+        images.size
+    })
+    val pagerIsDragged by pagerState.interactionSource.collectIsDraggedAsState()
+
+    val pageInteractionSource = remember { MutableInteractionSource() }
+    val pageIsPressed by pageInteractionSource.collectIsPressedAsState()
+
+    val autoAdvance = !pagerIsDragged && !pageIsPressed
+
+    if (autoAdvance) {
+        LaunchedEffect(pagerState, pageInteractionSource) {
+            while (true) {
+                delay(2000)
+                val nextPage = (pagerState.currentPage + 1) % images.size
+                pagerState.animateScrollToPage(nextPage)
+            }
+        }
+    }
+    val coroutineScope = rememberCoroutineScope()
+
+    Box(
+        contentAlignment = Alignment.Center, modifier = Modifier
+            .fillMaxSize()
+            .background(cardBackGround)
+    ) {
+        HorizontalPager(state = pagerState) { page ->
+            Image(
+                painter = painterResource(id = images[page]),
+                contentDescription = "pager_image_1",
+                modifier = Modifier
+                    .background(Color.Transparent)
+                    .fillMaxWidth()
+                    .height(300.dp),
+            )
+        }
+
+        RatingBlock(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(bottom = 8.dp, start = 8.dp)
+        )
+        ShareAndWishListBlock(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp)
+        )
+    }
+
+    Row(
+        Modifier
+            .wrapContentHeight()
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        repeat(pagerState.pageCount) { iteration ->
+            val isActive = pagerState.currentPage == iteration
+
+            // Animate the color
+            val color by animateColorAsState(
+                targetValue = if (isActive) MaterialTheme.colorScheme.primary else Color.LightGray,
+                label = "Indicator Color",
+                animationSpec = tween(durationMillis = 1000, easing = EaseIn)
+            )
+            if (pagerState.currentPage == iteration) {
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                        .size(height = 8.dp, width = 40.dp)
+                        .clickable {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(iteration)
+                            }
+                        }
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                        .size(8.dp)
+                        .clickable {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(iteration)
+                            }
+                        }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ShareAndWishListBlock(modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        IconButton(
+            onClick = {},
+            shape = RoundedCornerShape(8.dp),
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = Color.White.copy(0.5f),
+                contentColor = Color.DarkGray.copy(0.5f)
+            )
+        ) {
+            Icon(Icons.Outlined.FavoriteBorder, contentDescription = null)
+        }
+        Spacer(Modifier.height(16.dp))
+        IconButton(
+            onClick = {},
+            shape = RoundedCornerShape(8.dp),
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = Color.White.copy(0.5f),
+                contentColor = Color.DarkGray.copy(0.5f)
+            )
+        ) {
+            Icon(Icons.Outlined.Share, contentDescription = null)
+        }
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun ProductImageBlockPrev(modifier: Modifier = Modifier) {
+    AppTheme {
+        // ProductImageBlock()
     }
 }

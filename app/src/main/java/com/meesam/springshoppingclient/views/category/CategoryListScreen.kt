@@ -24,12 +24,19 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoStories
+import androidx.compose.material.icons.outlined.Boy
+import androidx.compose.material.icons.outlined.CameraIndoor
+import androidx.compose.material.icons.outlined.Face4
+import androidx.compose.material.icons.outlined.Man3
+import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.RemoveFromQueue
+import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material.icons.outlined.SmartToy
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -51,7 +58,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.meesam.springshoppingclient.R
@@ -281,7 +287,36 @@ private fun ItemCard(
             ) {
                 // 3. The Icon is placed inside the Box and automatically centered
                 Icon(
-                    Icons.Outlined.AutoStories,
+                    when(text){
+                        "All" -> {
+                           Icons.Outlined.SelectAll
+                        }
+                        "Electronics" -> {
+                            Icons.Outlined.RemoveFromQueue
+                        }
+                        "Mobile" -> {
+                            Icons.Outlined.PhoneAndroid
+                        }
+                        "Clothes" -> {
+                            Icons.Outlined.Man3
+                        }
+                        "Books" -> {
+                            Icons.Outlined.AutoStories
+                        }
+                        "Fashion" -> {
+                            Icons.Outlined.Face4
+                        }
+                        "Home Appliances" -> {
+                            Icons.Outlined.CameraIndoor
+                        }
+                        "Kid's Wear" -> {
+                            Icons.Outlined.Boy
+                        }
+                        "Toys" -> {
+                            Icons.Outlined.SmartToy
+                        }
+                        else -> Icons.Outlined.AutoStories
+                    },
                     contentDescription = "",
                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer.copy(
                         0.5f

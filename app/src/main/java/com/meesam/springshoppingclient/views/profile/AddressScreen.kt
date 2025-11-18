@@ -13,17 +13,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Apartment
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Hotel
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +40,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,13 +76,21 @@ fun AddressScreen(modifier: Modifier = Modifier, mainNavController: NavHostContr
     val togglePrimaryAddressState by addressScreenViewModel.togglePrimaryAddressState.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val deleteAddressState by addressScreenViewModel.deleteAddressState.collectAsState()
 
     LaunchedEffect(togglePrimaryAddressState) {
         when (togglePrimaryAddressState) {
-            is AppState.Error, AppState.Idle, AppState.Loading -> {}
+            is AppState.Error, AppState.Idle -> {
+                addressScreenViewModel.onEvent(AddressEvents.OnResetState)
+            }
             is AppState.Success -> {
                 Toast.makeText(context, "Primary address changed successfully", Toast.LENGTH_SHORT)
                     .show()
+                addressScreenViewModel.onEvent(AddressEvents.OnResetState)
+            }
+
+            is AppState.Loading -> {
+
             }
         }
     }
@@ -87,7 +105,6 @@ fun AddressScreen(modifier: Modifier = Modifier, mainNavController: NavHostContr
         is AppState.Loading -> {
             ShimmerAddressList()
         }
-
         is AppState.Error -> {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -97,7 +114,6 @@ fun AddressScreen(modifier: Modifier = Modifier, mainNavController: NavHostContr
                 Text(result.errorMessage.toString())
             }
         }
-
         is AppState.Idle -> {}
         is AppState.Success -> {
             AddressUi(
@@ -107,6 +123,22 @@ fun AddressScreen(modifier: Modifier = Modifier, mainNavController: NavHostContr
                 togglePrimaryAddressState = togglePrimaryAddressState
             )
         }
+    }
+
+    when (deleteAddressState) {
+        is AppState.Loading -> {
+            CircularProgressIndicator()
+        }
+        is AppState.Success -> {
+            Toast.makeText(context,"Address deleted successfully", Toast.LENGTH_SHORT ).show()
+            addressScreenViewModel.onEvent(AddressEvents.LoadUserAddressList)
+            addressScreenViewModel.onEvent(AddressEvents.OnResetState)
+        }
+        is AppState.Error -> {
+            Toast.makeText(context,"Something went wrong", Toast.LENGTH_SHORT ).show()
+            addressScreenViewModel.onEvent(AddressEvents.OnResetState)
+        }
+        else -> {}
     }
 }
 
@@ -120,7 +152,9 @@ fun AddressUi(
 ) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
-        modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.surfaceContainerLowest),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surfaceContainerLowest),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
@@ -145,7 +179,9 @@ fun AddressUi(
         }
 
         items(addressList) {
-            AddressCard(it) { selectedAddressId ->
+            AddressCard(it, onAddressDelete = { deletedAddressId ->
+                addressScreenViewModel.onEvent(AddressEvents.OnDeleteAddressClick(deletedAddressId))
+            }) { selectedAddressId ->
                 addressScreenViewModel.onEvent(AddressEvents.OnAddressToggleClick(selectedAddressId))
             }
         }
@@ -153,7 +189,11 @@ fun AddressUi(
 }
 
 @Composable
-fun AddressCard(userAddress: UserAddressResponse, onAddressToggle: (addressId: Long) -> Unit) {
+fun AddressCard(
+    userAddress: UserAddressResponse,
+    onAddressDelete: (addressId: Long) -> Unit,
+    onAddressToggle: (addressId: Long) -> Unit
+) {
     val addressParts = listOf<String>(
         userAddress.street.toString(),
         userAddress.city.toString(),
@@ -161,6 +201,7 @@ fun AddressCard(userAddress: UserAddressResponse, onAddressToggle: (addressId: L
         userAddress.pin.toString(),
         userAddress.country.toString()
     )
+    var expanded by remember { mutableStateOf(false) }
     val mainAddress = addressParts.filter { it.isNotBlank() }.joinToString(separator = ", ")
     OutlinedCard(
         colors = if (userAddress.isPrimary) {
@@ -248,13 +289,56 @@ fun AddressCard(userAddress: UserAddressResponse, onAddressToggle: (addressId: L
                 )
             }
 
-            IconButton(onClick = {}) {
-                Icon(Icons.Outlined.MoreVert, contentDescription = null)
+            Box(
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        text = {
+                            Text(
+                                "Edit", style = MaterialTheme.typography.labelLarge.copy(
+                                    fontFamily = FontFamily(Font(R.font.nunito_regular))
+                                )
+                            )
+                        },
+                        onClick = { /* Do something... */ }
+                    )
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.DeleteForever,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
+                        text = {
+                            Text(
+                                "Delete", style = MaterialTheme.typography.labelLarge.copy(
+                                    fontFamily = FontFamily(Font(R.font.nunito_regular))
+                                )
+                            )
+                        },
+                        onClick = {
+                            onAddressDelete(userAddress.id ?: 0)
+                        }
+                    )
+                }
             }
-
-        }
-
-        Column(modifier = Modifier.fillMaxWidth()) {
 
         }
     }

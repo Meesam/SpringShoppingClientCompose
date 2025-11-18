@@ -38,25 +38,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.meesam.springshoppingclient.views.products.ProductCounter
 import com.meesam.springshoppingclient.R
 import com.meesam.springshoppingclient.events.ProductEvent
+import com.meesam.springshoppingclient.viewmodel.ProductDetailViewModel
 import com.meesam.springshoppingclient.views.theme.AppTheme
 import com.meesam.springshoppingclient.views.products.ProductCounter
 import com.meesam.springshoppingclient.viewmodel.ProductsViewModel
 
 @Composable
 fun CartScreen() {
-    val productsViewModel: ProductsViewModel = hiltViewModel()
-    val productCounter by productsViewModel._productCounter.collectAsState()
+    val productDetailViewModel: ProductDetailViewModel = hiltViewModel()
+    val productCounter by productDetailViewModel.productCounter.collectAsState()
 
     LazyColumn {
         items(10) {
             CartItem(
                 productCounter = productCounter, onIncreaseCount = {
-                    productsViewModel.onEvent(
+                    productDetailViewModel.onEvent(
                         ProductEvent.ProductCountIncrement
                     )
                 },
                 onDecreaseCount = {
-                    productsViewModel.onEvent(
+                    productDetailViewModel.onEvent(
                         ProductEvent.ProductCountDecrement
                     )
                 })

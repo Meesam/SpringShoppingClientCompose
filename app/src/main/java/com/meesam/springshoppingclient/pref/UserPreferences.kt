@@ -11,7 +11,5 @@ val TEMP_EMAIL_KEY = stringPreferencesKey("temp_email")
 interface UserPreferences {
     suspend fun savePref(key: Preferences.Key<String>, pref: String)
     fun getPref(key: Preferences.Key<String>): Flow<String>
-
     suspend fun clear()
-
 }

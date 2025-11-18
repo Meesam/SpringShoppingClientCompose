@@ -30,4 +30,6 @@ interface UserRepository {
     suspend fun getUserAddresses(userId: Long): Response<List<UserAddressResponse>>
 
     suspend fun  togglePrimaryAddress(togglePrimaryAddressRequest: TogglePrimaryAddressRequest): Response<Void>
+
+    suspend fun  deleteAddress(addressId: Long): Response<Void>
 }
